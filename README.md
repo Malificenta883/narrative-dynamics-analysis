@@ -52,8 +52,8 @@ Each segment contains:
 
 ### Basic Analysis
 ```bash
-python myth_cluster_gudea3_github.py
-```
+python src/analysis.py
+
 
 This runs the core analysis pipeline:
 1. Transition entropy report (per-state determinism)
@@ -62,9 +62,8 @@ This runs the core analysis pipeline:
 
 ### With Exploratory Clustering
 ```bash
-# Edit main() to set run_exploratory_umap=True
-python myth_cluster_gudea3_github.py
-```
+python src/analysis.py --exploratory-umap
+
 
 Includes UMAP/HDBSCAN clustering on markers and cognitive frames.
 
@@ -106,7 +105,8 @@ narrative-dynamics-analysis/
 │   ├── gudea_segments_claude4.5sonnet.json
 │   ├── gudea_segments_gemini3PRO.json
 │   └── gudea_segments_gpt5.2.json
-└── myth_cluster_gudea3_github.py
+└── src/
+    └── analysis.py
 ```
 
 ## Methodology
@@ -137,7 +137,7 @@ Seven functional states based on ritual and mythological theory:
 If you use this work, please cite:
 ```bibtex
 @software{gudea_narrative_dynamics,
-  author = {Koshel, Marharyta},
+  author = {Koshel Marharyta},
   title = {Narrative Dynamics Analysis: Human vs. AI Annotation},
   year = {2025},
   url = {https://github.com/malificenta883/narrative-dynamics-analysis}
