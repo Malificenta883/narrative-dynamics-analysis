@@ -21,12 +21,13 @@ cd narrative-dynamics-analysis
 
 # Install dependencies
 pip install -r requirements.txt
-```
-Run core analysis (no plots)
+# Run core analysis (no plots)
 python src/analysis.py --data-dir data --no-graphs
 
-Run with plots (optional)
+# Run with plots (optional)
 python src/analysis.py --data-dir data
+```
+
 
 
 ## Data Structure
