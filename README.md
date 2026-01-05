@@ -117,6 +117,9 @@ narrative-dynamics-analysis/
 ```
 
 ## Methodology
+## LLM annotations were produced using a controlled annotation prompt
+(documented in `prompts/llm_annotation_prompt.md`)
+Field semantics are documented in docs/annotation_schema.md
 
 ### Narrative State Model
 Seven functional states based on ritual and mythological theory:
