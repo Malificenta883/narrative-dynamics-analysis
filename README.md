@@ -140,7 +140,7 @@ Seven functional states based on ritual and mythological theory:
 
 ## Key Findings
 
-(Add your research findings here after running analysis)
+
 
 ## Citation
 
