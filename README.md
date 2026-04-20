@@ -139,7 +139,7 @@ Seven functional states based on ritual and mythological theory:
 5. Generate directed graphs with edge weights
 
 ## Key Findings
-
+Visualization confirms the 'entropy collapse': AI constructs linear logic where human perception preserves variability.
 
 
 ## Citation
