@@ -1,0 +1,212 @@
+[
+  {
+    "segment_id": "1",
+    "text_en": "Self-Adornment and Intention (A 1-27)",
+    "function": "preparation",
+    "cognitive_frame": ["activation_through_attraction"],
+    "transition_from": "preparation",
+    "transition_to": "contact",
+    "markers": ["desert crown", "genitals", "delight", "abzu", "Eridug", "Enki"],
+    "anomaly_type": "sensory",
+    "exchange_channel": "opening",
+    "risk_mode": "seduction",
+    "outcome_tag": "channel_opened",
+    "evidence": [
+      "She put the cu-gura, the desert crown, on her head.",
+      "her genitals were remarkable.",
+      "She praised herself, full of delight at her genitals.",
+      "I shall direct my steps to the abzu, to Eridug.",
+      "I myself shall speak coaxingly to Enki."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "2",
+    "text_en": "Decision and Approach (B 1-15)",
+    "function": "contact",
+    "cognitive_frame": ["activation_through_attraction", "authority_invocation"],
+    "transition_from": "preparation",
+    "transition_to": "exchange",
+    "markers": ["abzu", "Enki", "plea", "perfume", "enterprise"],
+    "anomaly_type": "status",
+    "exchange_channel": "opening",
+    "risk_mode": "none",
+    "outcome_tag": "channel_opened",
+    "evidence": [
+      "I personally intend to go to the abzu.",
+      "I shall utter a plea to the lord Enki.",
+      "Like the sweet oil of the cedar.",
+      "directed her steps all by herself towards Enki's abzu.",
+      "Enki ... knew all about her enterprise."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "3",
+    "text_en": "Reception and Banquet (C 1-30)",
+    "function": "exchange",
+    "cognitive_frame": ["reciprocity"],
+    "transition_from": "contact",
+    "transition_to": "exchange",
+    "markers": ["butter cake", "water", "beer", "Lions Gate", "holy table"],
+    "anomaly_type": "none",
+    "exchange_channel": "active",
+    "risk_mode": "seduction",
+    "outcome_tag": "partial_transfer",
+    "evidence": [
+      "offer her butter cake to eat.",
+      "Let her be served cool refreshing water.",
+      "Pour beer for her.",
+      "welcome holy Inana at the holy table.",
+      "Enki and Inana were drinking beer together."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "4",
+    "text_en": "Gifting the Powers (D 1-27)",
+    "function": "exchange",
+    "cognitive_frame": ["reciprocity", "authority_invocation"],
+    "transition_from": "exchange",
+    "transition_to": "exchange",
+    "markers": ["power", "abzu", "give", "heroism", "wisdom", "crafts"],
+    "anomaly_type": "status",
+    "exchange_channel": "active",
+    "risk_mode": "none",
+    "outcome_tag": "partial_transfer",
+    "evidence": [
+      "I will give them to holy Inana.",
+      "In the name of my power, in the name of my abzu.",
+      "Holy Inana received heroism.",
+      "Holy Inana received wisdom.",
+      "Holy Inana received the craft of the carpenter."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "5",
+    "text_en": "Acknowledgement of Transfer (E 1-36)",
+    "function": "stabilization",
+    "cognitive_frame": ["reciprocity"],
+    "transition_from": "exchange",
+    "transition_to": "return",
+    "markers": ["he has given me", "wisdom", "crafts", "power"],
+    "anomaly_type": "none",
+    "exchange_channel": "confirmed",
+    "risk_mode": "none",
+    "outcome_tag": "stabilization",
+    "evidence": [
+      "He has given me righteousness.",
+      "He has given me deceit.",
+      "He has given me the craft of the carpenter.",
+      "He has given me wisdom.",
+      "He has given me triumph."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "6",
+    "text_en": "Realization and Loss (F 1-34)",
+    "function": "disruption",
+    "cognitive_frame": ["trickster", "caution"],
+    "transition_from": "stabilization",
+    "transition_to": "negotiation",
+    "markers": ["Boat of Heaven", "beer", "given", "daughter", "lost powers"],
+    "anomaly_type": "temporal",
+    "exchange_channel": "fractured",
+    "risk_mode": "deception",
+    "outcome_tag": "misread_signal",
+    "evidence": [
+      "the effects of the beer cleared from him.",
+      "holy Inana had gathered up the divine powers.",
+      "embarked onto the Boat of Heaven.",
+      "My master has given them to his daughter.",
+      "Where are the office of en priest..."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "7",
+    "text_en": "Consultation and Omen (G 1-21)",
+    "function": "negotiation",
+    "cognitive_frame": ["authority_invocation", "trickster"],
+    "transition_from": "disruption",
+    "transition_to": "negotiation",
+    "markers": ["frog", "advice", "temple door", "holy place"],
+    "anomaly_type": "normative",
+    "exchange_channel": "uncertain",
+    "risk_mode": "deception",
+    "outcome_tag": "partial_transfer",
+    "evidence": [
+      "full of advice.",
+      "They said: 'By the bolt of the temple door, a frog spoke.'",
+      "Enki grasped the frog by his right paw.",
+      "He showed him into his holy ...",
+      "knowing much."
+    ],
+    "confidence": 0.75
+  },
+  {
+    "segment_id": "8",
+    "text_en": "Pursuit and Contest (H 1-217)",
+    "function": "negotiation",
+    "cognitive_frame": ["boundary_testing", "authority_invocation", "caution"],
+    "transition_from": "negotiation",
+    "transition_to": "return",
+    "markers": ["Boat of Heaven", "important words", "father", "messenger", "countermanded"],
+    "anomaly_type": "normative",
+    "exchange_channel": "contested",
+    "risk_mode": "coercion",
+    "outcome_tag": "partial_transfer",
+    "evidence": [
+      "His important words cannot be countermanded.",
+      "How could my father have changed what he said to me?",
+      "he got the enkum to seize hold of the Boat of Heaven.",
+      "Has he sworn falsely by the name of his power and by the name of his abzu?",
+      "So Inana got hold again of the divine powers."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "9",
+    "text_en": "Arrival at Unug (H 218-266)",
+    "function": "return",
+    "cognitive_frame": ["reciprocity", "authority_invocation"],
+    "transition_from": "negotiation",
+    "transition_to": "stabilization",
+    "markers": ["Gate of Joy", "Unug", "festival", "Boat of Heaven", "praise"],
+    "anomaly_type": "status",
+    "exchange_channel": "restored",
+    "risk_mode": "none",
+    "outcome_tag": "stabilization",
+    "evidence": [
+      "you have brought the Boat of Heaven to the Gate of Joy.",
+      "Now there will be rejoicing in our city.",
+      "The people shall stand in the street full of awe.",
+      "The foreign lands shall declare my greatness.",
+      "My people shall utter my praise."
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "10",
+    "text_en": "Inventory and Final Settlement (J 1-142)",
+    "function": "stabilization",
+    "cognitive_frame": ["authority_invocation", "reciprocity"],
+    "transition_from": "return",
+    "transition_to": "stabilization",
+    "markers": ["you have brought with you", "crown", "kingship", "wisdom", "abzu"],
+    "anomaly_type": "status",
+    "exchange_channel": "closed",
+    "risk_mode": "none",
+    "outcome_tag": "stabilization",
+    "evidence": [
+      "You have brought with you the great and good crown.",
+      "You have brought with you kingship.",
+      "You have brought with you wisdom.",
+      "In the name of my power, in the name of my abzu.",
+      "the citizens of Unug."
+    ],
+    "confidence": 1.0
+  }
+]
