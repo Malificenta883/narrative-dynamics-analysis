@@ -16,7 +16,7 @@ For each segment, assign labels using the controlled vocabulary and output JSON 
 ### Function (choose exactly 1)
 - preparation | contact | exchange | disruption | negotiation | stabilization | return
 
-### Cognitive_Frame (choose 3–5)
+### Cognitive_Frame 
 - activation_through_attraction | authority_invocation | trickster | ritual_descent
 - boundary_testing | reciprocity | caution
 
