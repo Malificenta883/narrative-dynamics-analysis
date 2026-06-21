@@ -1,24 +1,13 @@
 #!/usr/bin/env python3
 """
-Narrative Dynamics Analysis — Gudea (multi-source segmentation)
-
-Core (publication-ready):
-  1) Transition entropy report
-  2) Transition matrices per source (+ top transitions)
-  3) Matrix comparison vs human baseline (L1 + JS + top diffs)
-  4) Weighted directed transition graphs (optional plotting)
-
-Optional (exploratory; off by default):
-  - UMAP/HDBSCAN clustering on arbitrary label fields using sentence embeddings.
-
-Expected data layout:
-  repo_root/
-    analysis.py
-    data/
-      gudea_segments_mine.json
-      gudea_segments_claude4.5sonnet.json
-      gudea_segments_gpt5.2.json
-      gudea_segments_gemini3PRO.json
+Narrative Dynamics Analysis — Meta-Pipeline
+Прогоняет анализ по всем мифам (папкам) внутри директории data/.
+Ожидаемая структура:
+  data/
+    gudea/
+      mine.json, claude.json, gpt.json, gemini.json
+    inanna_descent/
+      mine.json, claude.json, gpt.json, gemini.json
 """
 
 from __future__ import annotations
@@ -30,13 +19,11 @@ import warnings
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-# --- Warnings: keep your original intent, but scoped ---
 warnings.filterwarnings("ignore", message=".*n_neighbors is larger than the dataset size.*")
 warnings.filterwarnings("ignore", message=".*All labels are -1.*")
 
-# --- Optional deps (plotting / exploratory) ---
 HAS_PLOT = False
 plt = None
 try:
@@ -50,64 +37,29 @@ except Exception:
 try:
     import networkx as nx  # type: ignore
 except Exception as e:
-    raise ImportError("networkx is required for this script (graphs + helpers).") from e
+    raise ImportError("networkx is required for this script.") from e
 
-# UMAP/HDBSCAN + sentence embeddings only needed if you enable exploratory clustering
 try:
     import umap  # type: ignore
-except Exception:
-    umap = None
-
-try:
     import hdbscan  # type: ignore
-except Exception:
-    hdbscan = None
-
-try:
     from sentence_transformers import SentenceTransformer  # type: ignore
 except Exception:
+    umap = None
+    hdbscan = None
     SentenceTransformer = None
 
-
 # -----------------------------
-# Configuration / Controlled Vocab
+# Configuration
 # -----------------------------
-
 FUNCTIONS_ORDER = [
-    "preparation",
-    "contact",
-    "exchange",
-    "disruption",
-    "negotiation",
-    "stabilization",
-    "return",
+    "preparation", "contact", "exchange", "disruption",
+    "negotiation", "stabilization", "return"
 ]
-
-DEFAULT_FILES = {
-    "mine": "gudea_segments_mine.json",
-    "claude": "gudea_segments_claude4.5sonnet.json",
-    "gpt": "gudea_segments_gpt5.2.json",
-    "gemini": "gudea_segments_gemini3PRO.json",
-}
-
 SOURCE_ORDER = ["mine", "claude", "gpt", "gemini"]
 
-
 # -----------------------------
-# IO
+# IO & Meta-Cycle Loader
 # -----------------------------
-
-def load_segments(data_dir: Path, filename: str) -> List[Dict[str, Any]]:
-    path = data_dir / filename
-    if not path.exists():
-        raise FileNotFoundError(f"Missing data file: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data, list):
-        raise ValueError(f"Expected a list in {path}, got {type(data)}")
-    return data
-
-
 @dataclass(frozen=True)
 class DatasetBundle:
     texts: List[Dict[str, Any]]
@@ -115,13 +67,25 @@ class DatasetBundle:
     ids: List[str]
     per_source: Dict[str, List[Dict[str, Any]]]
 
-
-def load_all_datasets(data_dir: Path, files: Dict[str, str]) -> DatasetBundle:
+def load_myth_datasets(myth_dir: Path) -> DatasetBundle:
+    """Загружает стандартные JSON-файлы (mine.json, gpt.json...) из папки мифа."""
     per_source: Dict[str, List[Dict[str, Any]]] = {}
-    for src, fname in files.items():
-        per_source[src] = load_segments(data_dir, fname)
 
-    # Maintain stable concatenation order
+    # ИСПРАВЛЕНИЕ 1: восстановлен отступ — if внутри цикла for
+    for src in SOURCE_ORDER:
+        file_path = myth_dir / f"{src}.json"
+        if file_path.exists():
+            # Меняем кодировку на utf-8-sig — это заставит Питон игнорировать невидимый мусор от Windows
+            with open(file_path, "r", encoding="utf-8-sig") as f:
+                try:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        per_source[src] = data
+                except Exception as e:
+                    # Оставляем ровно один принт
+                    print(f"  [!!!] БИТЫЙ ФАЙЛ: {file_path}. Причина: {e}")
+
+    # ИСПРАВЛЕНИЕ 2: инициализация списков до их использования
     texts: List[Dict[str, Any]] = []
     sources: List[str] = []
     ids: List[str] = []
@@ -134,145 +98,121 @@ def load_all_datasets(data_dir: Path, files: Dict[str, str]) -> DatasetBundle:
         sources.extend([src] * len(segs))
         ids.extend([f"{src}_{i+1}" for i in range(len(segs))])
 
-    if len(texts) != len(sources) or len(texts) != len(ids):
-        raise RuntimeError("Internal mismatch: texts/sources/ids lengths diverged.")
-
     return DatasetBundle(texts=texts, sources=sources, ids=ids, per_source=per_source)
 
+def _norm(x: Any) -> str:
+    if x is None:
+        return ""
+    return str(x).strip().lower()
 
 # -----------------------------
-# Transition Matrices
+# Sequences & Exact Match (DTW)
 # -----------------------------
-
-Matrix = Dict[str, Dict[str, float]]  # matrix[from][to] -> value
-Matrices = Dict[str, Matrix]          # source -> matrix
-
-
-def _init_matrix(states: List[str]) -> Matrix:
-    return {fr: {to: 0.0 for to in states} for fr in states}
-
-
-def build_transition_matrices(
-    texts: List[Dict[str, Any]],
-    sources: List[str],
-    allowed_states: Optional[List[str]] = None,
-    normalize: bool = True,
-) -> Tuple[Matrices, List[str]]:
-    """
-    Build per-source transition matrices from segment fields:
-      transition_from, transition_to
-
-    If normalize=True: rows become probability distributions (row-normalized).
-    """
-    if allowed_states is None:
-        states = sorted(set(
-            (t.get("transition_from") for t in texts if t.get("transition_from")) |
-            (t.get("transition_to") for t in texts if t.get("transition_to"))
-        ))
-    else:
-        states = list(allowed_states)
-
-    matrices: Matrices = {}
-    for src in set(sources):
-        matrices[src] = _init_matrix(states)
-
-    # Count transitions
+def compare_function_and_transitions(texts: List[Dict[str, Any]], sources: List[str], anchor_source: str = "mine") -> None:
+    by_src = defaultdict(list)
     for item, src in zip(texts, sources):
-        fr = item.get("transition_from")
-        to = item.get("transition_to")
-        if fr not in states or to not in states:
-            # ignore garbage states / None
-            continue
-        matrices[src][fr][to] += 1.0
+        by_src[src].append(item)
 
-    # Normalize rows
-    if normalize:
-        for src, mat in matrices.items():
-            for fr in states:
-                row_sum = sum(mat[fr].values())
-                if row_sum <= 0:
-                    continue
-                for to in states:
-                    mat[fr][to] = mat[fr][to] / row_sum
+    if anchor_source not in by_src or not by_src[anchor_source]:
+        return
 
-    return matrices, states
-
-
-def print_transition_matrix(
-    mat: Matrix,
-    states: List[str],
-    title: str,
-    as_percent: bool = True,
-) -> None:
-    print("\n" + title)
-    header = "FROM\\TO".ljust(16) + "".join(s.rjust(14) for s in states)
-    print(header)
-    print("-" * len(header))
-
-    for fr in states:
-        row = fr.ljust(16)
-        for to in states:
-            v = float(mat[fr][to])
-            if as_percent:
-                row += f"{(v*100):13.1f}%"
-            else:
-                row += f"{v:14.2f}"
-        print(row)
-
-
-def run_transition_matrix_report(texts: List[Dict[str, Any]], sources: List[str], normalize: bool = True) -> None:
-    matrices, states = build_transition_matrices(
-        texts, sources,
-        allowed_states=FUNCTIONS_ORDER,
-        normalize=normalize,
-    )
+    anchor = by_src[anchor_source]
+    other_sources = [s for s in by_src.keys() if s != anchor_source]
 
     print("\n" + "=" * 80)
-    print("🔁 TRANSITION MATRICES (transition_from → transition_to)")
-    print(f"normalize = {normalize} (True=probabilities, False=counts)")
+    print("🔎 СРАВНЕНИЕ: function + transition_from/to (exact match)")
+    print(f"Anchor: {anchor_source}")
+    print("=" * 80)
+    print(f"{'SRC':<8} | {'N':>3} | {'func_match':>10} | {'trans_match':>11} | {'both_match':>10}")
+    print("-" * 60)
+
+    for src in sorted(other_sources):
+        lst = by_src[src]
+        n = min(len(anchor), len(lst))
+        if n == 0:
+            continue
+
+        func_ok, trans_ok, both_ok = 0, 0, 0
+        for i in range(n):
+            a, b = anchor[i], lst[i]
+            a_func, b_func = _norm(a.get("function")), _norm(b.get("function"))
+            a_tr = (_norm(a.get("transition_from")), _norm(a.get("transition_to")))
+            b_tr = (_norm(b.get("transition_from")), _norm(b.get("transition_to")))
+
+            fmatch = (a_func == b_func) and a_func != ""
+            tmatch = (a_tr == b_tr) and (a_tr != ("", ""))
+
+            if fmatch: func_ok += 1
+            if tmatch: trans_ok += 1
+            if fmatch and tmatch: both_ok += 1
+
+        print(f"{src:<8} | {n:>3} | {100.0*func_ok/n:>9.1f}% | {100.0*trans_ok/n:>10.1f}% | {100.0*both_ok/n:>9.1f}%")
+
+def compare_function_sequences_dtw(texts: List[Dict[str, Any]], sources: List[str], anchor_source: str = "mine") -> None:
+    by_src = defaultdict(list)
+    for item, src in zip(texts, sources):
+        by_src[src].append(item)
+
+    if anchor_source not in by_src:
+        return
+
+    anchor_funcs = [_norm(x.get("function")) for x in by_src[anchor_source]]
+
+    print("\n" + "=" * 80)
+    print(f"🧬 СРАВНЕНИЕ ПОСЛЕДОВАТЕЛЬНОСТЕЙ (Sequence Alignment/DTW)")
+    print(f"Anchor: {anchor_source} (длина: {len(anchor_funcs)})")
     print("=" * 80)
 
-    for src in SOURCE_ORDER:
-        if src not in matrices:
-            continue
-        mat = matrices[src]
-        print_transition_matrix(mat, states, title=f"Source: {src}", as_percent=normalize)
+    for src in sorted(by_src.keys()):
+        if src == anchor_source: continue
+        target_funcs = [_norm(x.get("function")) for x in by_src[src]]
+        
+        n, m = len(anchor_funcs), len(target_funcs)
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+        for i in range(1, n + 1): dp[i][0] = i
+        for j in range(1, m + 1): dp[0][j] = j
+            
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                cost = 0 if anchor_funcs[i-1] == target_funcs[j-1] else 1
+                dp[i][j] = min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost)
 
-        # Top transitions
-        triples: List[Tuple[float, str, str]] = []
-        for fr in states:
-            for to in states:
-                v = float(mat[fr][to])
-                if v > 0:
-                    triples.append((v, fr, to))
-        triples.sort(reverse=True, key=lambda x: x[0])
-
-        print("\nTop transitions:")
-        for v, fr, to in triples[:10]:
-            if normalize:
-                print(f"  {fr} → {to}: {v*100:.1f}%")
-            else:
-                print(f"  {fr} → {to}: {int(v)}")
-
-        print("\n" + "-" * 80)
-
-    # Comparison vs baseline
-    compare_transition_matrices(matrices, states, anchor="mine", top_k=12)
+        sim = (1 - dp[n][m] / max(n, m)) * 100 if max(n, m) > 0 else 0
+        print(f"{src.upper():<8} | Длина: {m:>3} | Edit Dist: {dp[n][m]:>3} | Сходство: {sim:>5.1f}%")
 
 
 # -----------------------------
-# Entropy
+# Matrices & Entropy & JSD
 # -----------------------------
+Matrix = Dict[str, Dict[str, float]]
+Matrices = Dict[str, Matrix]
 
-def row_entropy(row_probs: Dict[str, float], eps: float = 1e-12) -> float:
+def build_transition_matrices(texts: List[Dict[str, Any]], sources: List[str], normalize: bool = True) -> Tuple[Matrices, List[str]]:
+    matrices: Matrices = {src: {fr: {to: 0.0 for to in FUNCTIONS_ORDER} for fr in FUNCTIONS_ORDER} for src in set(sources)}
+    
+    for item, src in zip(texts, sources):
+        fr, to = _norm(item.get("transition_from")), _norm(item.get("transition_to"))
+        if fr in FUNCTIONS_ORDER and to in FUNCTIONS_ORDER:
+            matrices[src][fr][to] += 1.0
+
+    if normalize:
+        for src, mat in matrices.items():
+            for fr in FUNCTIONS_ORDER:
+                row_sum = sum(mat[fr].values())
+                if row_sum > 0:
+                    for to in FUNCTIONS_ORDER:
+                        mat[fr][to] /= row_sum
+    return matrices, FUNCTIONS_ORDER
+
+def row_entropy(row_probs: Dict[str, float]) -> float:
     """Shannon entropy in bits for one distribution row."""
     H = 0.0
     for p in row_probs.values():
         p = float(p)
         if p <= 0:
             continue
-        H -= p * math.log(p + eps, 2)
-    return H
+        H -= p * math.log(p, 2)
+    return max(H, 0.0)
 
 
 def transition_entropy(
@@ -284,11 +224,10 @@ def transition_entropy(
     Returns:
       entropy_by_state: H(from_state)
       mean_entropy: mean over (non-empty) rows
-      weighted_entropy: weighted by outgoing mass (kept for clarity)
+      weighted_entropy: weighted by outgoing mass
     """
     entropy_by_state: Dict[str, float] = {}
     weights: Dict[str, float] = {}
-
     for fr in states:
         row = matrix[fr]
         row_sum = sum(float(v) for v in row.values())
@@ -298,14 +237,12 @@ def transition_entropy(
             continue
         entropy_by_state[fr] = row_entropy(row)
         weights[fr] = row_sum  # ~1.0 if normalized
-
     vals: List[float] = []
     for fr in states:
         if ignore_empty_rows and weights[fr] <= 0:
             continue
         vals.append(entropy_by_state[fr])
     mean_entropy = sum(vals) / len(vals) if vals else 0.0
-
     total_w = sum(weights.values())
     weighted_entropy = (
         sum(entropy_by_state[fr] * weights[fr] for fr in states) / total_w
@@ -315,41 +252,30 @@ def transition_entropy(
 
 
 def run_transition_entropy_report(texts: List[Dict[str, Any]], sources: List[str]) -> None:
-    matrices, states = build_transition_matrices(
-        texts, sources,
-        allowed_states=FUNCTIONS_ORDER,
-        normalize=True,
-    )
-
+    matrices, states = build_transition_matrices(texts, sources, normalize=True)
     order = [s for s in SOURCE_ORDER if s in matrices]
-
     print("\n" + "=" * 80)
     print("🌪️ TRANSITION ENTROPY REPORT (bits)")
     print("H=0 means deterministic; higher H means more branching/uncertainty.")
     print("=" * 80)
-
     print("\nOverall entropy (mean over non-empty rows):")
     print(f"{'Source':<10} | {'Mean H':>8} | {'Weighted H':>10}")
     print("-" * 36)
-
     per_source: Dict[str, Tuple[Dict[str, float], float, float]] = {}
     for src in order:
         ent_by_state, mean_H, weighted_H = transition_entropy(matrices[src], states, ignore_empty_rows=True)
         per_source[src] = (ent_by_state, mean_H, weighted_H)
         print(f"{src:<10} | {mean_H:8.4f} | {weighted_H:10.4f}")
-
     print("\nEntropy by FROM-state (bits):")
     header = "FROM\\SRC".ljust(14) + "".join(s.rjust(10) for s in order)
     print(header)
     print("-" * len(header))
-
     for fr in states:
         row = fr.ljust(14)
         for src in order:
             ent_by_state = per_source[src][0]
             row += f"{ent_by_state.get(fr, 0.0):10.4f}"
         print(row)
-
     print("\nMost deterministic states per source (lowest H, excluding empty rows):")
     for src in order:
         ent_by_state = per_source[src][0]
@@ -362,398 +288,206 @@ def run_transition_entropy_report(texts: List[Dict[str, Any]], sources: List[str
         print(f"  {src:<8}: " + ", ".join(f"{fr} (H={H:.3f})" for H, fr in top))
 
 
-# -----------------------------
-# Matrix comparison (L1 + JS)
-# -----------------------------
-
-def _safe_log2(x: float) -> float:
-    return math.log(x, 2)
-
-
-def _js_divergence_row(p: Dict[str, float], q: Dict[str, float], eps: float = 1e-12) -> float:
-    """Jensen–Shannon divergence for two distributions (one row)."""
-    sp = sum(p.values())
-    sq = sum(q.values())
-    if sp <= 0 or sq <= 0:
-        return 0.0
-    p = {k: v / sp for k, v in p.items()}
-    q = {k: v / sq for k, v in q.items()}
-
-    keys = set(p) | set(q)
-    m = {k: 0.5 * (p.get(k, 0.0) + q.get(k, 0.0)) for k in keys}
-
-    def kl(a: Dict[str, float], b: Dict[str, float]) -> float:
-        out = 0.0
-        for k, av in a.items():
-            if av <= 0:
-                continue
-            bv = b.get(k, 0.0)
-            if bv <= 0:
-                bv = eps
-            out += av * (_safe_log2(av) - _safe_log2(bv))
-        return out
-
-    return 0.5 * kl(p, m) + 0.5 * kl(q, m)
-
-
-def compare_transition_matrices(
-    matrices: Matrices,
-    states: List[str],
-    anchor: str = "mine",
-    top_k: int = 10,
-) -> None:
-    """
-    Compare all sources to anchor:
-      - L1 distance over all cells
-      - mean JS divergence over rows
-      - top-k absolute probability diffs
-    """
-    if anchor not in matrices:
-        print(f"⚠️ No matrix for anchor='{anchor}'")
-        return
-
-    ref = matrices[anchor]
-
+def run_transition_matrix_report(texts: List[Dict[str, Any]], sources: List[str]) -> None:
+    matrices, states = build_transition_matrices(texts, sources, normalize=True)
     print("\n" + "=" * 80)
-    print(f"📌 TRANSITION MATRIX COMPARISON vs '{anchor}'")
+    print("🔁 TRANSITION MATRICES (Probabilities)")
+    print("=" * 80)
+    
+    for src in SOURCE_ORDER:
+        if src not in matrices: continue
+        print(f"\nSource: {src}\n" + "-"*40)
+        for fr in states:
+            row_str = " ".join([f"{matrices[src][fr][to]*100:5.1f}%" for to in states])
+            if sum(matrices[src][fr].values()) > 0:
+                print(f"{fr[:4].upper()} | {row_str}")
+
+def _js_divergence_flattened(mat_p: Matrix, mat_q: Matrix, states: List[str], eps: float = 1e-12) -> float:
+    p_flat = [mat_p[fr][to] for fr in states for to in states]
+    q_flat = [mat_q[fr][to] for fr in states for to in states]
+    sp, sq = sum(p_flat), sum(q_flat)
+    if sp <= 0 or sq <= 0: return 0.0
+    
+    p_flat = [x / sp for x in p_flat]
+    q_flat = [x / sq for x in q_flat]
+    m_flat = [0.5 * (p + q) for p, q in zip(p_flat, q_flat)]
+
+    def kl(a: List[float], b: List[float]) -> float:
+        return sum(av * math.log2(av / max(bv, eps)) for av, bv in zip(a, b) if av > 0)
+
+    return 0.5 * kl(p_flat, m_flat) + 0.5 * kl(q_flat, m_flat)
+
+def compare_transition_matrices(matrices: Matrices, states: List[str], anchor: str = "mine") -> None:
+    if anchor not in matrices: return
+    ref = matrices[anchor]
+    
+    print("\n" + "=" * 80)
+    print(f"📊 СРАВНЕНИЕ МАТРИЦ ПЕРЕХОДОВ vs {anchor.upper()} (L1 & JSD)")
     print("=" * 80)
 
     for src in SOURCE_ORDER:
-        if src not in matrices or src == anchor:
-            continue
-
+        if src not in matrices or src == anchor: continue
         mat = matrices[src]
-
-        # L1 over all cells
-        l1 = 0.0
-        diffs: List[Tuple[float, str, str, float, float]] = []
+        js = _js_divergence_flattened(ref, mat, states)
+        
+        l1, diffs = 0.0, []
         for fr in states:
             for to in states:
-                a = float(ref[fr][to])
-                b = float(mat[fr][to])
-                d = abs(a - b)
+                d = abs(ref[fr][to] - mat[fr][to])
                 l1 += d
-                if d > 0:
-                    diffs.append((d, fr, to, a, b))
+                if d > 0: diffs.append((d, fr, to, ref[fr][to], mat[fr][to]))
+
         diffs.sort(reverse=True, key=lambda x: x[0])
-
-        # JS mean over rows
-        js_vals = []
-        for fr in states:
-            js_vals.append(_js_divergence_row(ref[fr], mat[fr]))
-        js_mean = sum(js_vals) / len(js_vals) if js_vals else 0.0
-
-        print(f"\nSource: {src}")
-        print(f"  L1 distance: {l1:.6f}")
-        print(f"  Mean JS divergence (rows): {js_mean:.6f}")
-
-        print(f"  Top {top_k} cell diffs (abs):")
-        for d, fr, to, a, b in diffs[:top_k]:
-            print(f"    {fr:>12} → {to:<12} | {anchor}={a*100:6.1f}%  {src}={b*100:6.1f}%  Δ={d*100:6.1f}%")
-
-    print("\n" + "-" * 80)
-
+        print(f"\n{src.upper()}:\n  L1 distance: {l1:.4f}\n  Flattened JSD: {js:.4f}")
+        for d, fr, to, a, b in diffs[:5]:
+            print(f"    {fr[:4]}->{to[:4]}: {anchor}={a*100:4.0f}% | {src}={b*100:4.0f}% | Δ={d*100:4.0f}%")
 
 # -----------------------------
-# Graph visualization (optional)
+# Edge-Edit Distance (GED)
 # -----------------------------
+def run_edge_ged_report(texts: List[Dict[str, Any]], sources: List[str], anchor: str = "mine", min_weight: float = 0.15) -> None:
+    matrices, states = build_transition_matrices(texts, sources, normalize=True)
+    order = [s for s in SOURCE_ORDER if s in matrices]
+    
+    print("\n" + "="*80)
+    print(f"🧩 EDGE-EDIT DISTANCE (GED-like) min_weight>={min_weight}")
+    print("="*80)
 
-def plot_transition_graph(
-    mat: Matrix,
-    states: List[str],
-    title: str,
-    min_weight: float = 0.15,
-    layout_seed: int = 42,
-) -> None:
-    if not HAS_PLOT:
-        print("(Skipping plot, matplotlib not found)")
-        return
+    dist = {a: {} for a in order}
+    for i, a in enumerate(order):
+        for j, b in enumerate(order):
+            d = 0.0
+            for fr in states:
+                for to in states:
+                    w1, w2 = matrices[a][fr][to], matrices[b][fr][to]
+                    if w1 >= min_weight and w2 >= min_weight: d += abs(w1 - w2)
+                    elif w1 >= min_weight: d += w1
+                    elif w2 >= min_weight: d += w2
+            dist[a][b] = d
 
-    G = nx.DiGraph()
-    for s in states:
-        G.add_node(s)
+    header = " " * 10 + "".join(f"{s:>10}" for s in order)
+    print(header + "\n" + "-" * len(header))
+    for a in order:
+        print(f"{a:<10}" + "".join(f"{dist[a][b]:10.4f}" for b in order))
 
-    for fr in states:
-        for to in states:
-            w = float(mat[fr][to])
-            if w >= min_weight:
-                G.add_edge(fr, to, weight=w)
-
-    if G.number_of_edges() == 0:
-        print(f"(No edges above min_weight={min_weight} for {title})")
-        return
-
-    pos = nx.spring_layout(G, seed=layout_seed)
-
-    plt.figure(figsize=(10, 8))
-    plt.title(title)
-
-    nx.draw_networkx_nodes(G, pos, node_size=2200, edgecolors="black")
-    edges = G.edges(data=True)
-    widths = [6 * d["weight"] for (_, _, d) in edges]
-
-    nx.draw_networkx_edges(
-        G, pos,
-        arrowstyle="->",
-        arrowsize=20,
-        width=widths,
-        connectionstyle="arc3,rad=0.15"
-    )
-
-    nx.draw_networkx_labels(G, pos, font_size=10, font_weight="bold")
-
-    edge_labels = {(u, v): f"{d['weight']*100:.0f}%" for (u, v, d) in edges}
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=9)
-
-    plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_all_transition_graphs(texts: List[Dict[str, Any]], sources: List[str], min_weight: float = 0.15) -> None:
-    matrices, states = build_transition_matrices(
-        texts, sources,
-        allowed_states=FUNCTIONS_ORDER,
-        normalize=True,
-    )
-
+# -----------------------------
+# Graphs & Clusters (Wrappers)
+# -----------------------------
+def plot_all_transition_graphs(texts: List[Dict[str, Any]], sources: List[str], title_suffix: str) -> None:
+    if not HAS_PLOT: return
+    matrices, states = build_transition_matrices(texts, sources)
+    
     for src in SOURCE_ORDER:
-        if src not in matrices:
+        if src not in matrices: continue
+        mat = matrices[src]
+        
+        G = nx.DiGraph()
+        G.add_nodes_from(states)
+        for fr in states:
+            for to in states:
+                # Порог отсечения энтропийного шума (оставляем только сильные паттерны)
+                if mat[fr][to] >= 0.15: 
+                    G.add_edge(fr, to, weight=mat[fr][to])
+        
+        if G.number_of_edges() == 0: continue
+        
+        # 1. Жесткая круговая топология. Все узлы прибиты к своим местам.
+        # Это позволяет визуально сравнивать графы разных моделей (отсутствующие ребра сразу видны как пустоты).
+        pos = nx.circular_layout(G)
+        
+        plt.figure(figsize=(10, 8))
+        plt.title(f"Graph: {src.upper()} - {title_suffix}", pad=20, fontsize=14, fontweight="bold")
+        
+        # 2. Отрисовка узлов
+        nx.draw_networkx_nodes(G, pos, node_color="#E6E6FA", node_size=3500, edgecolors="white")
+        nx.draw_networkx_labels(G, pos, font_size=9)
+        
+        # 3. Отрисовка ребер с изгибом (arc3), чтобы встречные вероятности (A->B и B->A) не сливались в одну линию
+        nx.draw_networkx_edges(
+            G, pos, 
+            edge_color="#555555", 
+            arrows=True, 
+            arrowsize=18, 
+            connectionstyle="arc3,rad=0.15",
+            min_target_margin=15
+        )
+        
+        # 4. Отрисовка текста с белой подложкой (bbox) и смещением (label_pos) от центра к началу вектора
+        edge_labels = {(u, v): f"{d['weight']*100:.0f}%" for u, v, d in G.edges(data=True)}
+        nx.draw_networkx_edge_labels(
+            G, pos, 
+            edge_labels=edge_labels, 
+            label_pos=0.3, 
+            font_size=9,
+            bbox=dict(facecolor="white", edgecolor="none", alpha=0.8, pad=1)
+        )
+        
+        plt.axis("off")
+        plt.tight_layout()
+        plt.show()
+# -----------------------------
+# Main Loop (Meta-Analysis)
+# -----------------------------
+def main(data_dir: Path, no_graphs: bool = False) -> None:
+    if not data_dir.exists():
+        print(f"Директория {data_dir} не найдена.")
+        return
+
+    myth_dirs = [d for d in data_dir.iterdir() if d.is_dir()]
+    if not myth_dirs:
+        print(f"В папке {data_dir} нет подпапок с мифами.")
+        return
+
+    # Контейнеры для Universal Matrix
+    universal_texts = []
+    universal_sources = []
+
+    # 1. ЛОКАЛЬНЫЙ АНАЛИЗ (по каждому мифу)
+    for myth_dir in myth_dirs:
+        print("\n" + "░"*80)
+        print(f"🚀 АНАЛИЗ КОРПУСА: {myth_dir.name.upper()}")
+        print("░"*80)
+        
+        bundle = load_myth_datasets(myth_dir)
+        if not bundle.texts:
+            print(f"⚠️ Нет валидных .json файлов в {myth_dir.name}, пропускаем.")
             continue
-        plot_transition_graph(
-            matrices[src],
-            states,
-            title=f"Transition Graph — {src.upper()}",
-            min_weight=min_weight,
-        )
 
+        # Собираем данные для глобального анализа
+        universal_texts.extend(bundle.texts)
+        universal_sources.extend(bundle.sources)
 
-# -----------------------------
-# Exploratory: embeddings + UMAP + HDBSCAN
-# -----------------------------
+        run_transition_entropy_report(bundle.texts, bundle.sources)
+        compare_function_and_transitions(bundle.texts, bundle.sources)
+        compare_function_sequences_dtw(bundle.texts, bundle.sources)
+        matrices, states = build_transition_matrices(bundle.texts, bundle.sources)
+        compare_transition_matrices(matrices, states)
+        run_edge_ged_report(bundle.texts, bundle.sources)
+        
+        if not no_graphs:
+            plot_all_transition_graphs(bundle.texts, bundle.sources, title_suffix=myth_dir.name)
 
-def _require_exploratory_deps() -> None:
-    missing = []
-    if SentenceTransformer is None:
-        missing.append("sentence-transformers")
-    if umap is None:
-        missing.append("umap-learn")
-    if hdbscan is None:
-        missing.append("hdbscan")
-    if missing:
-        raise ImportError(
-            "Exploratory clustering requires: " + ", ".join(missing) +
-            "\nInstall via pip, e.g.: pip install " + " ".join(missing)
-        )
-
-
-def plot_clusters(X_2d, labels, sources, title: str) -> None:
-    if not HAS_PLOT:
-        print("(Skipping plot, matplotlib not found)")
-        return
-
-    # Markers by source (kept from your intent; feel free to adjust)
-    markers_style = {"mine": "o", "claude": "s", "gemini": "^", "gpt": "D"}
-
-    plt.figure(figsize=(10, 8))
-
-    # Noise first
-    noise_idx = [i for i, lab in enumerate(labels) if lab == -1]
-    if noise_idx:
-        plt.scatter(X_2d[noise_idx, 0], X_2d[noise_idx, 1], marker="x", alpha=0.3, label="Noise (-1)")
-
-    for src in sorted(set(sources), key=lambda x: SOURCE_ORDER.index(x) if x in SOURCE_ORDER else 999):
-        idx = [i for i, s in enumerate(sources) if s == src and labels[i] != -1]
-        if not idx:
-            continue
-        plt.scatter(
-            X_2d[idx, 0],
-            X_2d[idx, 1],
-            marker=markers_style.get(src, "o"),
-            alpha=0.7,
-            s=60,
-            label=src,
-            edgecolors="white",
-            linewidth=0.5,
-        )
-
-    plt.title(title)
-    plt.xlabel("UMAP-1")
-    plt.ylabel("UMAP-2")
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.3)
-    plt.tight_layout()
-    plt.show()
-
-
-def run_cluster_analysis_with_embeddings(
-    texts: List[Dict[str, Any]],
-    sources: List[str],
-    ids: List[str],
-    target_field: str,
-    plot_title: str = "Cluster Analysis",
-    emb_model_name: str = "all-MiniLM-L6-v2",
-) -> None:
-    _require_exploratory_deps()
-
-    print("\n" + "=" * 80)
-    print(f"🚀 EMBEDDING ANALYSIS: {plot_title}")
-    print(f"   Field used for analysis: '{target_field}'")
-    print("=" * 80)
-
-    processed_texts: List[str] = []
-    for item in texts:
-        data = item.get(target_field)
-
-        if isinstance(data, list):
-            text_val = " ".join(map(str, data))
-        elif data is None:
-            text_val = ""
-        else:
-            text_val = str(data)
-
-        processed_texts.append(text_val)
-
-    if all(not s.strip() for s in processed_texts):
-        print(f"⚠️ Warning: field '{target_field}' is empty for all elements.")
-        return
-
-    # Embeddings
-    model = SentenceTransformer(emb_model_name)
-    print("Generating embeddings...")
-    embeddings = model.encode(processed_texts, convert_to_numpy=True, normalize_embeddings=True)
-
-    n_samples = embeddings.shape[0]
-    if n_samples < 2:
-        print("Too few items for clustering.")
-        return
-
-    # UMAP
-    n_neighbors = min(10, n_samples - 1)
-    reducer = umap.UMAP(
-        n_components=2,
-        random_state=42,
-        n_neighbors=n_neighbors,
-        min_dist=0.1,
-        metric="cosine",
-    )
-    X_2d = reducer.fit_transform(embeddings)
-
-    # HDBSCAN
-    clusterer = hdbscan.HDBSCAN(
-        min_cluster_size=3,
-        min_samples=2,
-        metric="euclidean",
-        allow_single_cluster=False,
-    )
-    labels = clusterer.fit_predict(X_2d)
-
-    # Examples
-    print(f"\n--- RESULTS (Field: {target_field}) ---")
-    for lbl in sorted(set(labels)):
-        print("\nNoise (not clustered):" if lbl == -1 else f"\nCluster {lbl}:")
-        cluster_indices = [i for i, x in enumerate(labels) if x == lbl]
-        for idx in cluster_indices[:3]:
-            print(f"   [{ids[idx]} | {sources[idx]}]: {processed_texts[idx]}")
-        if len(cluster_indices) > 3:
-            print(f"   ... and {len(cluster_indices) - 3} more elements")
-
-    # Cross-statistics
-    print("\n--- CLUSTER STATISTICS ---")
-    print(f"{'Cluster':<10} | {'Total':<6} | {'Mine':<5} | {'Claude':<6} | {'Gemini':<6} | {'GPT':<5}")
-    print("-" * 55)
-
-    cluster_sources: Dict[int, List[str]] = defaultdict(list)
-    for src, label in zip(sources, labels):
-        cluster_sources[int(label)].append(src)
-
-    for label, src_list in sorted(cluster_sources.items(), key=lambda x: x[0]):
-        c = Counter(src_list)
-        cluster_name = f"{label}" if label != -1 else "Noise"
-        print(
-            f"{cluster_name:<10} | "
-            f"{len(src_list):<6} | "
-            f"{c['mine']:<5} | "
-            f"{c['claude']:<6} | "
-            f"{c['gemini']:<6} | "
-            f"{c['gpt']:<5}"
-        )
-
-    plot_clusters(X_2d, labels, sources, plot_title)
-
-
-# -----------------------------
-# Main / CLI
-# -----------------------------
-
-def main(
-    data_dir: Path,
-    run_exploratory_umap: bool = False,
-    plot_graphs: bool = True,
-    graph_min_weight: float = 0.15,
-) -> None:
-    bundle = load_all_datasets(data_dir, DEFAULT_FILES)
-
-    texts = bundle.texts
-    sources = bundle.sources
-    ids = bundle.ids
-
-    # 1) Transition entropy
-    run_transition_entropy_report(texts, sources)
-
-    # 2) Transition matrices + comparison vs baseline inside
-    run_transition_matrix_report(texts, sources, normalize=True)
-
-    # 3) Graphs (optional)
-    if plot_graphs:
-        plot_all_transition_graphs(texts, sources, min_weight=graph_min_weight)
-
-    # 4) Exploratory
-    if run_exploratory_umap:
-        run_cluster_analysis_with_embeddings(
-            texts, sources, ids,
-            target_field="markers",
-            plot_title="Clustering by Markers (exploratory)",
-        )
-        run_cluster_analysis_with_embeddings(
-            texts, sources, ids,
-            target_field="cognitive_frame",
-            plot_title="Clustering by Cognitive Frame (exploratory)",
-        )
-
+    # 2. ГЛОБАЛЬНЫЙ АНАЛИЗ (Universal Baseline)
+    if universal_texts:
+        print("\n\n" + "█"*80)
+        print("🌍 UNIVERSAL HUMAN BASELINE (Агрегация всех мифов)")
+        print("█"*80)
+        
+        run_transition_entropy_report(universal_texts, universal_sources)
+        run_transition_matrix_report(universal_texts, universal_sources)
+        uni_matrices, uni_states = build_transition_matrices(universal_texts, universal_sources)
+        compare_transition_matrices(uni_matrices, uni_states)
+        run_edge_ged_report(universal_texts, universal_sources)
+        
+        if not no_graphs:
+            plot_all_transition_graphs(universal_texts, universal_sources, title_suffix="UNIVERSAL")
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
-    p.add_argument(
-        "--data-dir",
-        type=str,
-        default=str(Path(__file__).parent / "data"),
-        help="Path to data directory with gudea_segments_*.json files.",
-    )
-    p.add_argument(
-        "--exploratory-umap",
-        action="store_true",
-        help="Run optional embedding+UMAP+HDBSCAN clustering (needs extra deps).",
-    )
-    p.add_argument(
-        "--no-graphs",
-        action="store_true",
-        help="Disable plotting transition graphs (still computes matrices).",
-    )
-    p.add_argument(
-        "--min-weight",
-        type=float,
-        default=0.15,
-        help="Minimum edge weight for transition graph visualization.",
-    )
+    p.add_argument("--data-dir", type=str, default=str(Path(__file__).parent.parent / "data"))
+    p.add_argument("--no-graphs", action="store_true")
     return p.parse_args()
-
 
 if __name__ == "__main__":
     args = _parse_args()
-    main(
-        data_dir=Path(args.data_dir),
-        run_exploratory_umap=bool(args.exploratory_umap),
-        plot_graphs=not bool(args.no_graphs),
-        graph_min_weight=float(args.min_weight),
-    )
+    main(Path(args.data_dir), args.no_graphs)
