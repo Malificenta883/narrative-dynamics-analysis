@@ -5,7 +5,7 @@ A segment is the smallest contiguous text unit in which the dominant **Function*
 Start a new segment when there is a detectable shift in **intention**, **interaction mode**, **epistemic position**, or **symbolic risk**.
 
 ## Task
-Analyze the text step by step from stroke **1** to **814**.
+Analyze the text step by step from stroke **1** to the end.
 Do **not** skip strokes and do **not** overlap them.
 Segments must cover the entire range contiguously.
 
@@ -35,10 +35,17 @@ For each segment, assign labels using the controlled vocabulary and output JSON 
 ### Markers
 Keywords that are explicit, repetitive, or salient (e.g., crown, radiance, sacred body, banquet, beer, me, boat).
 
+## Confidence Scoring Rule
+Calculate confidence strictly based on evidence matching:
+
+- **1.0**: Direct, literal presence of Markers in the Evidence text. Unambiguous mapping to Function.
+- **0.75**: Markers are implicitly present (synonyms/metaphors) but the Cognitive_Frame is logically indisputable.
+- **0.50**: Forced categorization due to ambiguous text; multiple Function or Risk_Mode options could equally apply.
+
 ## Output requirements (strict)
 - Output **only JSON** (no commentary).
 - Output a **JSON array** of segment objects.
-- `segment_id` must be sequential: `gudea_001`, `gudea_002`, ...
+- `segment_id` must be sequential: `gudea_001`, `gudea_002`, ... .
 - `text_en` must be short: scene name + stroke range (e.g., `"Boat offering (strokes 120–146)"`).
 - `evidence` must contain **short direct quotations** from the segment (1–3 short quotes).
 - Do not summarize the story.
