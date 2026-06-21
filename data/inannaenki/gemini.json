@@ -1,0 +1,255 @@
+[
+  {
+    "segment_id": "SEGMENT A",
+    "text_en": "Inana's Preparation (1-27)",
+    "function": "preparation",
+    "cognitive_frame": [
+      "activation_through_attraction",
+      "boundary_testing"
+    ],
+    "transition_from": "preparation",
+    "transition_to": "contact",
+    "markers": [
+      "desert crown",
+      "genitals",
+      "abzu",
+      "Eridug",
+      "speak coaxingly"
+    ],
+    "anomaly_type": "normative",
+    "exchange_channel": "_",
+    "risk_mode": "seduction",
+    "outcome_tag": "channel_opened",
+    "evidence": [
+      "She put the cu-gura, the desert crown, on her head.[cite: 1]",
+      "She praised herself, full of delight at her genitals, she praised herself, full of delight at her genitals.[cite: 1]",
+      "I shall direct my steps to Enki, to the abzu, to Eridug...[cite: 1]",
+      "...and I myself shall speak coaxingly to him, in the abzu, in Eridug...[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT B",
+    "text_en": "Journey and Awareness (1-15)",
+    "function": "contact",
+    "cognitive_frame": [
+      "caution",
+      "authority_invocation"
+    ],
+    "transition_from": "contact",
+    "transition_to": "exchange",
+    "markers": [
+      "sweet oil",
+      "abzu",
+      "exceptional knowledge",
+      "intentions"
+    ],
+    "anomaly_type": "spatial",
+    "exchange_channel": "_",
+    "risk_mode": "none",
+    "outcome_tag": "channel_opened",
+    "evidence": [
+      "I, Inana, personally intend to go to the abzu (1 ms. has instead: intend to go to Eridug).[cite: 1]",
+      "On that day the maiden Inana, holy Inana, directed her steps all by herself towards Enki's abzu in Eridug.[cite: 1]",
+      "On that day, he of exceptional knowledge, who knows the divine powers in heaven and earth, who from his own dwelling already knows the intentions of the gods...[cite: 1]",
+      "...Enki spoke to his man, gave him instructions: \"Come here, my man, listen to my words.\"[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT C",
+    "text_en": "Banquet at the Abzu (1-30)",
+    "function": "exchange",
+    "cognitive_frame": [
+      "reciprocity",
+      "ritual_descent"
+    ],
+    "transition_from": "exchange",
+    "transition_to": "disruption",
+    "markers": [
+      "butter cake",
+      "beer",
+      "Lions Gate",
+      "girlfriend's house",
+      "bronze vessels"
+    ],
+    "anomaly_type": "status",
+    "exchange_channel": "_",
+    "risk_mode": "overload",
+    "outcome_tag": "channel_opened",
+    "evidence": [
+      "Pour beer for her, in front of the Lions Gate, make her feel as if she is in her girlfriend's house, make her ...... as a colleague.[cite: 1]",
+      "You are to welcome holy Inana at the holy table, at the table of An.[cite: 1]",
+      "So it came about that Enki and Inana were drinking beer together in the abzu, and enjoying the taste of sweet wine.[cite: 1]",
+      "The bronze aga vessels were filled to the brim, and the two of them started a competition, drinking from the bronze vessels of Urac.[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT D",
+    "text_en": "Transfer of Divine Powers (1-27)",
+    "function": "exchange",
+    "cognitive_frame": [
+      "reciprocity",
+      "authority_invocation"
+    ],
+    "transition_from": "exchange",
+    "transition_to": "stabilization",
+    "markers": [
+      "heroism",
+      "power",
+      "name of my abzu",
+      "craft",
+      "holy Inana received"
+    ],
+    "anomaly_type": "normative",
+    "exchange_channel": "_",
+    "risk_mode": "overload",
+    "outcome_tag": "partial_transfer",
+    "evidence": [
+      "Holy Inana received heroism, power, wickedness, righteousness, the plundering of cities, making lamentations, rejoicing.[cite: 1]",
+      "\"In the name of my power, in the name of my abzu, I will give them to holy Inana, my daughter...\"[cite: 1]",
+      "Holy Inana received wisdom, attentiveness, holy purification rites, the shepherd's hut...[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT E",
+    "text_en": "Acknowledgment of Gifts (1-36)",
+    "function": "stabilization",
+    "cognitive_frame": [
+      "authority_invocation"
+    ],
+    "transition_from": "stabilization",
+    "transition_to": "return",
+    "markers": [
+      "He has given me",
+      "righteousness",
+      "craft",
+      "strife",
+      "triumph"
+    ],
+    "anomaly_type": "status",
+    "exchange_channel": "_",
+    "risk_mode": "none",
+    "outcome_tag": "stabilization",
+    "evidence": [
+      "\"He has given me righteousness. He has given me the plundering of cities.\"[cite: 1]",
+      "\"He has given me the craft of the carpenter. He has given me the craft of the coppersmith.\"[cite: 1]",
+      "\"He has given me wisdom. He has given me attentiveness.\"[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT F",
+    "text_en": "Enki's Discovery (1-34)",
+    "function": "disruption",
+    "cognitive_frame": [
+      "caution",
+      "trickster"
+    ],
+    "transition_from": "disruption",
+    "transition_to": "negotiation",
+    "markers": [
+      "Boat of Heaven",
+      "effects of the beer cleared",
+      "where are",
+      "given them to his daughter"
+    ],
+    "anomaly_type": "temporal",
+    "exchange_channel": "_",
+    "risk_mode": "deception",
+    "outcome_tag": "misread_signal",
+    "evidence": [
+      "But holy Inana had gathered up the divine powers and embarked onto the Boat of Heaven.[cite: 1]",
+      "As the effects of the beer cleared from him who had drunk beer... the great lord Enki turned his attention to the ...... building.[cite: 1]",
+      "\"Where are the office of en priest, the office of lagal priest, divinity, the great and good crown, the royal throne?\"[cite: 1]",
+      "\"My master has given them to his daughter.\"[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT G",
+    "text_en": "The Frog Incident (1-21)",
+    "function": "preparation",
+    "cognitive_frame": [
+      "ritual_descent"
+    ],
+    "transition_from": "disruption",
+    "transition_to": "negotiation",
+    "markers": [
+      "frog",
+      "right paw",
+      "halub tree",
+      "bird of heaven"
+    ],
+    "anomaly_type": "sensory",
+    "exchange_channel": "_",
+    "risk_mode": "none",
+    "outcome_tag": "partial_transfer",
+    "evidence": [
+      "They said: \"By the bolt of the temple door, a frog spoke.\"[cite: 1]",
+      "Enki grasped the frog by his right paw.[cite: 1]",
+      "He received ...... the halub tree and his box-tree.[cite: 1]"
+    ],
+    "confidence": 0.5
+  },
+  {
+    "segment_id": "SEGMENT H",
+    "text_en": "The Interceptions (1-223)",
+    "function": "negotiation",
+    "cognitive_frame": [
+      "boundary_testing",
+      "authority_invocation"
+    ],
+    "transition_from": "negotiation",
+    "transition_to": "return",
+    "markers": [
+      "Boat of Heaven",
+      "enkum",
+      "fifty giants",
+      "countermanded",
+      "water has never touched"
+    ],
+    "anomaly_type": "spatial",
+    "exchange_channel": "_",
+    "risk_mode": "coercion",
+    "outcome_tag": "channel_blocked",
+    "evidence": [
+      "\"Go now! The enkum are to take the Boat of Heaven away from her!\"[cite: 1]",
+      "\"What Enki spoke was very serious. His important words cannot be countermanded.\"[cite: 1]",
+      "\"How could my father have changed what he said to me? How could he have altered his promise as far as I am concerned?\"[cite: 1]",
+      "So Inana got hold again of the divine powers which had been presented to her, and the Boat of Heaven...[cite: 1]"
+    ],
+    "confidence": 1.0
+  },
+  {
+    "segment_id": "SEGMENT J",
+    "text_en": "Arrival at Unug (1-142)",
+    "function": "stabilization",
+    "cognitive_frame": [
+      "reciprocity",
+      "authority_invocation"
+    ],
+    "transition_from": "return",
+    "transition_to": "stabilization",
+    "markers": [
+      "You have brought with you",
+      "Unug",
+      "Eridug",
+      "divine powers",
+      "festival"
+    ],
+    "anomaly_type": "status",
+    "exchange_channel": "_",
+    "risk_mode": "none",
+    "outcome_tag": "stabilization",
+    "evidence": [
+      "\"Inana, you have brought with you the office of en priest, you have brought with you the office of lagal priest...\"[cite: 1]",
+      "\"You have brought with you the noble sceptre, you have brought with you the staff and crook...\"[cite: 1]",
+      "Enki spoke to holy Inana: \"In the name of my power, in the name of my abzu, I will establish ...... in my abzu for the woman.\"[cite: 1]",
+      "\"May the citizens of your city, Inana, the citizens of Unug, live ......!\"[cite: 1]"
+    ],
+    "confidence": 1.0
+  }
+]
