@@ -1,10 +1,13 @@
 # Narrative Dynamics Analysis: Human vs. AI Semantic Topologies
 
-Comparative meta-analysis of narrative segmentation patterns between human scholars and frontier large language models (Claude 4.5, 4.6 Sonnet, Gemini 3, 3.1 Pro, GPT-5.2, 5.5) applied to ancient Sumerian mythological corpora. 
+Comparative meta-analysis of narrative segmentation patterns between human scholars and frontier large language models 
+(Claude 4.5, 4.6 Sonnet, Gemini 3, 3.1 Pro, GPT-5.2, 5.5) applied to ancient Sumerian mythological corpora. 
 
 ## Overview
 
-This project explores the cognitive gap between human macro-narrative comprehension and AI local statistical parsing. By converting the Sumerian mythological texts (Gudea Cylinder A, Inanna's Descent, Inanna and Enki) into directed Markov chains, this pipeline mathematically proves how LLMs fail to retain macro-narrative topology in highly entropic texts.
+This project explores the cognitive gap between human macro-narrative comprehension and AI local statistical parsing. 
+By converting the Sumerian mythological texts (Gudea Cylinder A, Inanna's Descent, Inanna and Enki) into directed Markov chains, 
+this pipeline mathematically proves how LLMs fail to retain macro-narrative topology in highly entropic texts.
 
 The analysis utilizes:
 - **Transition Matrices** to model the physical flow between functional narrative states.
@@ -51,21 +54,22 @@ python src/analysis.py --data-dir data --no-graphs
 
 The aggregation of the Sumerian corpus reveals fundamental architectural differences in text processing:
 
-> **The Human Pulse (Cyclical Topology)** > Human annotation exhibits dynamic entropy—maintaining high uncertainty
-($H > 2.0$) during narrative 'contact' and 'exchange' phases,
+> **The Human Pulse (Cyclical Topology)** > Human annotation exhibits dynamic entropy—maintaining high
+uncertainty ($H > 2.0$) during narrative 'contact' and 'exchange' phases,
  but strictly collapsing to absolute determinism ($H = 0.0$) at the 'return' phase,
  seamlessly looping into new 'disruptions'. Humans read in cycles.
 
-> **GPT's Markov Loops** > GPT models exhibit severe absorbing state bugs. In highly entropic resolutions,
- GPT falls into a `return -> return` loop (50% probability), losing the macro-context of the myth.
+> **GPT's Markov Loops** > GPT models exhibit severe absorbing state bugs. In highly entropic
+resolutions, GPT falls into a `return -> return` loop (50% probability), losing
+the macro-context of the myth.
 
 > **Claude's Fractal Noise** > Claude engages in micro-parsing, over-segmenting the text and
 artificially inflating entropy across all nodes (mean $H \approx 1.89$). It reacts to local
 syntax (e.g., the word "give") rather than global semantics.
 
-> **Gemini's Entropy Collapse** > Gemini acts as a strict optimizer. It flattens the narrative topology,
- eliminating both zones of high uncertainty and rigid determinism, forcing the myth into a linear,
-flat computational pipe.
+> **Gemini's Entropy Collapse** > Gemini acts as a strict optimizer. It flattens the narrative
+ topology, eliminating both zones of high uncertainty and rigid determinism,
+ forcing the myth into a linear, flat computational pipe.
 
 ---
 
