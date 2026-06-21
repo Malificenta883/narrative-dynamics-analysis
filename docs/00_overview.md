@@ -8,7 +8,7 @@ Consequently, this project studies myth not as a static text, but as an active c
 
 ## What Is Analyzed
 
-The dataset consists of parallel annotations of the same mythological corpus (the Sumerian Gudea cycle), produced by:
+The dataset consists of parallel annotations of the same mythological corpus (the Sumerian corpora), produced by:
 * **A human annotator** (acting as the biological cognitive baseline).
 * **Large Language Models** (Claude, GPT, Gemini) attempting to reconstruct this logic.
 
