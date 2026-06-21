@@ -1,6 +1,6 @@
 # Narrative Dynamics Analysis: Human vs. AI Semantic Topologies
 
-Comparative meta-analysis of narrative segmentation patterns between human scholars and frontier large language models (Claude 3.5 Sonnet, Gemini 1.5 Pro, GPT-4o) applied to ancient Sumerian mythological corpora. 
+Comparative meta-analysis of narrative segmentation patterns between human scholars and frontier large language models (Claude 4.5, 4.6 Sonnet, Gemini 3, 3.1 Pro, GPT-5.2, 5.5) applied to ancient Sumerian mythological corpora. 
 
 ## Overview
 
