@@ -1,167 +1,91 @@
-# narrative-dynamics-analysis
-This repository explores differences in narrative dynamics between human annotation and frontier language models using transition matrices, entropy, and graph-based analysis.
-# Narrative Dynamics Analysis
+# Narrative Dynamics Analysis: Human vs. AI Semantic Topologies
 
-Comparative analysis of narrative segmentation patterns between human annotation and frontier language models (Claude, Gemini, GPT) using transition matrices, entropy measures, and graph-based visualization.
+Comparative meta-analysis of narrative segmentation patterns between human scholars and frontier large language models (Claude 3.5 Sonnet, Gemini 1.5 Pro, GPT-4o) applied to ancient Sumerian mythological corpora. 
 
 ## Overview
 
-This project analyzes the Gudea Cylinder A text, comparing how human scholars and AI models segment and interpret ancient Sumerian narrative structure. The analysis uses:
+This project explores the cognitive gap between human macro-narrative comprehension and AI local statistical parsing. By converting the Sumerian mythological texts (Gudea Cylinder A, Inanna's Descent, Inanna and Enki) into directed Markov chains, this pipeline mathematically proves how LLMs fail to retain macro-narrative topology in highly entropic texts.
 
-- **Transition matrices** to model narrative flow between functional states
-- **Shannon entropy** to measure determinism vs. branching in transitions
-- **Weighted directed graphs** to visualize narrative pathways
-- **UMAP/HDBSCAN clustering** (optional) for exploratory analysis
+The analysis utilizes:
+- **Transition Matrices** to model the physical flow between functional narrative states.
+- **Shannon Entropy ($H$)** to measure cognitive determinism vs. branching uncertainty.
+- **Dynamic Time Warping (DTW)** for sequence alignment and handling index shifts.
+- **Edge-Graph Edit Distance (Edge-GED)** to quantify topological divergence.
+- **Universal Human Baseline Aggregation** to extract the core human reading algorithm across multiple texts.
 
-## Installation
-```bash
+## Architecture & Data Structure
+
+The repository has been scaled from a single-text script into a hierarchical meta-pipeline. Data is stored in `data/` categorized by myth corpus.
+
+```text
+narrative-dynamics-analysis/
+├── data/
+│   ├── gudea/
+│   │   ├── mine.json (Human Anchor)
+│   │   ├── claude.json
+│   │   ├── gpt.json
+│   │   └── gemini.json
+│   ├── inanna_descent/
+│   └── inanna_enki/
+└── src/
+    └── analysis.py (Meta-Cycle Execution)
+
+Each JSON segment maps the narrative state, transition logic, cognitive frames, and anomaly types.
+
+Installation & Usage
+
 # Clone the repository
-git clone https://github.com/malificenta883/narrative-dynamics-analysis.git
+git clone [https://github.com/malificenta883/narrative-dynamics-analysis.git](https://github.com/malificenta883/narrative-dynamics-analysis.git)
 cd narrative-dynamics-analysis
 
-# Install dependencies
+# Install dependencies (requires networkx, matplotlib)
 pip install -r requirements.txt
-# Run core analysis (no plots)
+
+# Run the complete meta-pipeline (generates Universal Baseline)
+python src/analysis.py --data-dir data
+
+# Run without generating matplotlib graphs
 python src/analysis.py --data-dir data --no-graphs
 
-# Run with plots (optional)
-python src/analysis.py --data-dir data
-```
+## 📊 Key Findings (Empirical Results)
+
+The aggregation of the Sumerian corpus reveals fundamental architectural differences in text processing:
+
+> **The Human Pulse (Cyclical Topology)** > Human annotation exhibits dynamic entropy—maintaining high uncertainty ($H > 2.0$) during narrative 'contact' and 'exchange' phases, but strictly collapsing to absolute determinism ($H = 0.0$) at the 'return' phase, seamlessly looping into new 'disruptions'. Humans read in cycles.
+
+> **GPT's Markov Loops** > GPT models exhibit severe absorbing state bugs. In highly entropic resolutions, GPT falls into a `return -> return` loop (50% probability), losing the macro-context of the myth.
+
+> **Claude's Fractal Noise** > Claude engages in micro-parsing, over-segmenting the text and artificially inflating entropy across all nodes (mean $H \approx 1.89$). It reacts to local syntax (e.g., the word "give") rather than global semantics.
+
+> **Gemini's Entropy Collapse** > Gemini acts as a strict optimizer. It flattens the narrative topology, eliminating both zones of high uncertainty and rigid determinism, forcing the myth into a linear, flat computational pipe.
+
+---
+
+## ⚙️ Narrative State Model
+
+The framework uses seven functional states based on ritual and mythological theory:
+
+* **Preparation** — Setup and anticipation
+* **Contact** — Initial divine-human encounter
+* **Exchange** — Bidirectional transfer
+* **Disruption** — Breakdown or confusion
+* **Negotiation** — Mediation and clarification
+* **Stabilization** — Resolution and integration
+* **Return** — Completion and closure
 
 
+Citation
+If you use this methodology or dataset, please cite:
 
-## Data Structure
-
-Annotations are stored in `data/` as JSON files:
-- `gudea_segments_mine.json` - Human expert annotation (baseline)
-- `gudea_segments_claude4.5sonnet.json` - Claude 4.5 Sonnet
-- `gudea_segments_gemini3PRO.json` - Gemini 3 Pro
-- `gudea_segments_gpt5.2.json` - GPT-5.2
-
-Each segment contains:
-```json
-{
-  "segment_id": "1",
-  "text_en": "Description",
-  "function": "preparation|contact|exchange|disruption|negotiation|stabilization|return",
-  "transition_from": "previous_state",
-  "transition_to": "next_state",
-  "cognitive_frame": ["authority_invocation", "reciprocity", ...],
-  "markers": ["key", "terms", ...],
-  "anomaly_type": "spatial|temporal|sensory|normative|status",
-  "risk_mode": "none|overload|coercion|deception|seduction|distortion",
-  "outcome_tag": "channel_opened|partial_transfer|stabilization|...",
-  "confidence": 0.95
-}
-```
-
-## Usage
-
-### Basic Analysis
-```bash
-python src/analysis.py
-
-
-This runs the core analysis pipeline:
-1. Transition entropy report (per-state determinism)
-2. Transition matrices (normalized probabilities)
-3. Weighted directed graphs (visual representation)
-
-### With Exploratory Clustering
-```bash
-python src/analysis.py --exploratory-umap
-
-
-Includes UMAP/HDBSCAN clustering on markers and cognitive frames.
-
-## Key Metrics
-
-### Transition Entropy
-Measures uncertainty in state transitions:
-- **H = 0**: Deterministic (single outgoing edge)
-- **H > 2**: High branching/uncertainty
-
-### L1 Distance
-Sum of absolute differences between probability matrices:
-```
-L1 = Σ|P_human(i→j) - P_model(i→j)|
-```
-
-### Jensen-Shannon Divergence
-Symmetric KL-divergence for comparing distributions (0 = identical, higher = more different).
-
-## Example Output
-```
-🌪️ TRANSITION ENTROPY REPORT (bits)
-Source     | Mean H   | Weighted H
-----------------------------------------
-mine       |   1.2345 |     1.2000
-claude     |   1.4567 |     1.4200
-gpt        |   1.6789 |     1.6500
-gemini     |   1.3456 |     1.3100
-```
-
-## Project Structure
-```
-narrative-dynamics-analysis/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── data/
-│   ├── gudea_segments_mine.json
-│   ├── gudea_segments_claude4.5sonnet.json
-│   ├── gudea_segments_gemini3PRO.json
-│   └── gudea_segments_gpt5.2.json
-└── src/
-    └── analysis.py
-```
-
-## Methodology
-### LLM annotations were produced using a controlled annotation prompt
-(documented in `prompts/llm_annotation_prompt.md`)
-Field semantics are documented in docs/annotation_schema.md
-
-### Narrative State Model
-Seven functional states based on ritual and mythological theory:
-1. **Preparation** - Setup and anticipation
-2. **Contact** - Initial divine-human encounter
-3. **Exchange** - Bidirectional transfer
-4. **Disruption** - Breakdown or confusion
-5. **Negotiation** - Mediation and clarification
-6. **Stabilization** - Resolution and integration
-7. **Return** - Completion and closure
-
-### Analysis Pipeline
-1. Load segmented data from all annotators
-2. Build normalized transition matrices (row-stochastic)
-3. Calculate Shannon entropy per state
-4. Compute distance metrics (L1, JS divergence)
-5. Generate directed graphs with edge weights
-
-## Key Findings
-Visualization confirms the 'entropy collapse': AI constructs linear logic where human perception preserves variability.
-
-
-## Citation
-
-If you use this work, please cite:
-```bibtex
-@software{gudea_narrative_dynamics,
+@software{sumerian_narrative_dynamics,
   author = {Koshel Marharyta},
-  title = {Narrative Dynamics Analysis: Human vs. AI Annotation},
-  year = {2025},
-  url = {https://github.com/malificenta883/narrative-dynamics-analysis}
+  title = {Narrative Dynamics Analysis: Human vs. AI Semantic Topologies},
+  year = {2026},
+  url = {[https://github.com/malificenta883/narrative-dynamics-analysis](https://github.com/malificenta883/narrative-dynamics-analysis)}
 }
-```
-
-## License
-
-MIT License - see LICENSE file
 
 ## Contact
 
-Koshel Marharyta - eleovora882@gmail.com
-
-## Acknowledgments
-
-- Gudea Cylinder A translation based on [https://cdli.earth/artifacts/431881]
+Koshel Marharyta 
+- Email: eleovora882@gmail.com
+- ORCID: [https://orcid.org/0000-xxxx-xxxx-xxxx]
