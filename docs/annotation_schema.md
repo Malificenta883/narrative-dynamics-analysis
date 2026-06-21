@@ -58,3 +58,16 @@ channel_opened | channel_blocked | partial_transfer | misread_signal | stabiliza
 
 **Evidence**  
 Minimal quotation fragments used to anchor the segment to the source corpus.
+
+---
+
+**Exchange_Channel**  
+Reserved for future development to track spatial/temporal exchange vectors. Currently set to `"_"` by default.
+
+---
+
+**Confidence**  
+Epistemic certainty of the AI segment mapping. Calculated strictly via evidence matching:  
+**1.0:** Direct, literal presence of Markers in the Evidence text. Unambiguous mapping to Function.  
+**0.75:** Markers are implicitly present (synonyms/metaphors) but the Cognitive_Frame is logically indisputable.  
+**0.50:** Forced categorization due to ambiguous text; multiple Function or Risk_Mode options could equally apply.
