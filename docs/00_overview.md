@@ -2,7 +2,7 @@
 
 This project operates on a fundamental paradigm shift regarding the nature of ancient texts. **Myth can be defined as a neurosensorial reconstruction of experience. A condensate of perception engraved into the shape of storytelling. It’s not a way to describe the world. It is a language of varied consciousness.**
 
-Consequently, this project studies myth not as a static text, but as an active cognitive **process**. Instead of comparing surface-level text similarities or semantic embeddings, the analysis focuses on the "narrative dynamics"—how consciousness **moves** from one functional state to another. The core object of study is the sequence of transitions that structures the myth[cite: 4].
+Consequently, this project studies myth not as a static text, but as an active cognitive **process**. Instead of comparing surface-level text similarities or semantic embeddings, the analysis focuses on the "narrative dynamics"—how consciousness **moves** from one functional state to another. The core object of study is the sequence of transitions that structures the myth.
 
 ---
 
