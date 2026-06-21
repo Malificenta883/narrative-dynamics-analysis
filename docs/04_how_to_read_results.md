@@ -12,7 +12,7 @@ From these sequences, we construct discrete Markov transition matrices:
 
 $$P(s_{j} \mid s_{i})$$
 
-Each row represents a probability distribution over the possible next states, answering the question: *If the narrative is currently in state $s_{i}$, where does it go next?*.
+Each row represents a probability distribution over the possible next states, answering the question: *If the narrative is currently in state $$s_{i}$$, where does it go next?*.
 
 * **Deterministic Logic:** A row with a single 100% transition indicates absolute structural rigidity (not an error).
 * **Interpretive Branching:** Rows with dispersed probabilities indicate narrative uncertainty.
