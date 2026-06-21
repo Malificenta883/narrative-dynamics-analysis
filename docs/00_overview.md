@@ -1,77 +1,52 @@
-# Overview: Transition-Based Analysis of Myth Structure
+# Overview: Transition-Based Analysis of Mythological Dynamics
 
-This project studies myth not as a static text, but as a **process**.
+This project operates on a fundamental paradigm shift regarding the nature of ancient texts. **Myth can be defined as a neurosensorial reconstruction of experience. A condensate of perception engraved into the shape of storytelling. It’s not a way to describe the world. It is a language of varied consciousness.**
 
-Instead of comparing surface-level similarity between texts or embeddings,
-the analysis focuses on how a narrative **moves** from one functional state to another.
-The core object of study is the *sequence of transitions* that structures the myth.
+Consequently, this project studies myth not as a static text, but as an active cognitive **process**. Instead of comparing surface-level text similarities or semantic embeddings, the analysis focuses on the "narrative dynamics"—how consciousness **moves** from one functional state to another. The core object of study is the sequence of transitions that structures the myth[cite: 4].
 
-## What is analyzed
+---
 
-The dataset consists of multiple annotations of the same myth
-(Gudea Cycle, Sumerian tradition), produced by:
+## What Is Analyzed
 
-- a human annotator (baseline)
-- several large language models (Claude, GPT, Gemini)
+The dataset consists of parallel annotations of the same mythological corpus (the Sumerian Gudea cycle), produced by:
+* **A human annotator** (acting as the biological cognitive baseline).
+* **Large Language Models** (Claude, GPT, Gemini) attempting to reconstruct this logic.
 
-Each annotation segments the myth into units and assigns to each unit:
-- a **function** (e.g. preparation, contact, exchange, disruption, etc.)
-- a **transition** from a previous function to a next one
+Each system segments the narrative and assigns to each unit:
+1. A **function** (e.g., preparation, contact, exchange, disruption).
+2. A **transition** routing the narrative from a previous function to the next.
 
-The goal is not to force identical segmentation,
-but to compare the **resulting transition dynamics**.
+The goal is not to force identical segmentation, but to compare the resulting transition dynamics.
 
-## Why transitions, not exact matches
+---
 
-Different systems segment narratives differently.
-Therefore, index-wise comparison (segment 1 vs segment 1) is unstable
-and conceptually misleading.
+## The Methodological Shift: Why Transitions?
 
-This project instead uses representations that are **invariant to segmentation**:
-- transition matrices
-- entropy of outgoing transitions
-- probability-weighted transition graphs
+Because human and machine systems segment narratives differently, index-wise comparisons (segment 1 vs. segment 1) are conceptually misleading and statistically unstable. 
 
-These representations capture *how the narrative behaves*, not how it is sliced.
+To capture the "language of varied consciousness," this pipeline utilizes representations that are **invariant to segmentation**. These metrics capture *how the narrative behaves*, rather than how it is sliced:
 
-## Core methods
+* **Transition Matrices:** Building empirical probability distributions where $P(s_{j} \mid s_{i})$ represents the likelihood of transitioning between states.
+* **Transition Entropy ($H$):** Measuring whether a narrative move is strictly deterministic or highly variable via Shannon entropy.
+* **Matrix Comparison:** Quantifying systemic differences using L1 distance (absolute structural difference) and Jensen–Shannon divergence (distributional divergence).
+* **Transition Graphs:** Visualizing dominant probability-weighted macro-structures to allow qualitative inspection.
 
-1. **Transition matrices**  
-   For each source, a matrix is built where  
-   `matrix[from_state][to_state] = P(transition)`.
+---
 
-2. **Transition entropy**  
-   For each functional state, Shannon entropy is computed over its outgoing transitions.
-   This measures how deterministic or variable a narrative move is.
+## Empirical Outcomes
 
-3. **Matrix comparison**  
-   Differences between sources are quantified using:
-   - L1 distance (absolute structural difference)
-   - Jensen–Shannon divergence (distributional divergence)
+The analysis reveals that while LLMs often agree with humans on *which functions exist* within a text, they fundamentally differ in **how transitions are distributed**. 
 
-4. **Transition graphs**  
-   Directed graphs visualize dominant transitions,
-   allowing qualitative inspection of narrative structure.
+* **Topological Divergence:** Some models enforce deterministic narrative collapse, while others generate branching, high-entropy structures. 
+* **Invisible Discrepancies:** These structural differences persist even when surface-level textual similarity appears high. These differences cannot be captured by embedding clustering alone.
 
-## What the results show
+---
 
-The analysis reveals that:
-- models often agree on *which functions exist*,
-  but differ in **how transitions are distributed**
-- some models exhibit more deterministic narrative behavior,
-  others produce more branching structures
-- differences persist even when surface similarity appears high
+## Broader Implications
 
-These differences cannot be captured by embedding clustering alone.
+By treating myth as a structured cognitive process, this framework bridges the gap between the humanities and rigorous data analysis. It enables the formal evaluation of human vs. machine interpretations at the level of hidden **narrative dynamics**, rather than textual resemblance.
 
-## Why this matters
-
-This approach treats myth as a structured cognitive process.
-It allows comparison between human and machine interpretations
-at the level of **narrative dynamics**, not textual resemblance.
-
-The same framework can be applied to:
-- other myths
-- ritual narratives
-- historical or legal texts
-- model comparison beyond mythological content
+The core architecture is domain-agnostic and can be applied to:
+* Other myths and ritual narratives.
+* Historical or legal texts.
+* Model comparison and LLM reasoning evaluation beyond mythological content.
