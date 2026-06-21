@@ -51,13 +51,21 @@ python src/analysis.py --data-dir data --no-graphs
 
 The aggregation of the Sumerian corpus reveals fundamental architectural differences in text processing:
 
-> **The Human Pulse (Cyclical Topology)** > Human annotation exhibits dynamic entropy—maintaining high uncertainty ($H > 2.0$) during narrative 'contact' and 'exchange' phases, but strictly collapsing to absolute determinism ($H = 0.0$) at the 'return' phase, seamlessly looping into new 'disruptions'. Humans read in cycles.
+> **The Human Pulse (Cyclical Topology)** > Human annotation exhibits dynamic entropy—maintaining high uncertainty
+($H > 2.0$) during narrative 'contact' and 'exchange' phases,
+ but strictly collapsing to absolute determinism ($H = 0.0$) at the 'return' phase,
+ seamlessly looping into new 'disruptions'. Humans read in cycles.
 
-> **GPT's Markov Loops** > GPT models exhibit severe absorbing state bugs. In highly entropic resolutions, GPT falls into a `return -> return` loop (50% probability), losing the macro-context of the myth.
+> **GPT's Markov Loops** > GPT models exhibit severe absorbing state bugs. In highly entropic resolutions,
+ GPT falls into a `return -> return` loop (50% probability), losing the macro-context of the myth.
 
-> **Claude's Fractal Noise** > Claude engages in micro-parsing, over-segmenting the text and artificially inflating entropy across all nodes (mean $H \approx 1.89$). It reacts to local syntax (e.g., the word "give") rather than global semantics.
+> **Claude's Fractal Noise** > Claude engages in micro-parsing, over-segmenting the text and
+artificially inflating entropy across all nodes (mean $H \approx 1.89$). It reacts to local
+syntax (e.g., the word "give") rather than global semantics.
 
-> **Gemini's Entropy Collapse** > Gemini acts as a strict optimizer. It flattens the narrative topology, eliminating both zones of high uncertainty and rigid determinism, forcing the myth into a linear, flat computational pipe.
+> **Gemini's Entropy Collapse** > Gemini acts as a strict optimizer. It flattens the narrative topology,
+ eliminating both zones of high uncertainty and rigid determinism, forcing the myth into a linear,
+flat computational pipe.
 
 ---
 
