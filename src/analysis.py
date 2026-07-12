@@ -14,14 +14,16 @@ Narrative Dynamics Analysis — Meta-Pipeline (v2)
      granularity-конфаунд: длинный/короткий источник больше не штрафуется.
   2. DTW по сегментам ОСТАВЛЕН, но честно помечен как "shape, granularity-sensitive".
      Построчное согласие — это granularity-free измерение, смотри на него.
-  3. ДОБАВЛЕНЫ оси субъектности: freedom_map (рабочая, осмысленна при >=3 источниках)
-     и imputed_subjectivity (ЗАГЛУШКА: вернёт None, пока источников < 3 —
-     с двумя нельзя построить консенсус, от которого отклоняешься).
-  4. Поведенческая ось (устойчивость инварианта) требует N разметок одного
-     источника (слепой ретест) — пока не реализована, помечена TODO.
+  3. ДОБАВЛЕНЫ оси субъектности: freedom_map (cross-source, осмысленна при >=3 источниках),
+     imputed_subjectivity (отклонение от консенсуса; считается при >=3 источниках) и
+     behavioral_subjectivity (устойчивость инварианта поверх N прогонов; N-устойчивая,
+     доля по моде, взвешенная по CROSS-SOURCE freedom).
+  4. Лоадер толерантен к формату: голый список ИЛИ объект-с-шапкой {run_id,...,segments};
+     номера строк читаются из line_start/line_end (фолбэк — числа в text_en).
+     Single-source вариант (один источник vs сам себя поверх N прогонов) — в onemodel.py.
 
 Ожидаемая структура:
-  data/<myth>/{mine,claude,gpt,gemini}.json
+  data/<myth>/{mine,claude,gpt,gemini}.json  (+ опц. {source}_run{N}.json для N прогонов)
 """
 
 from __future__ import annotations
@@ -75,18 +77,62 @@ class DatasetBundle:
     per_source: Dict[str, List[Dict[str, Any]]]
 
 
-def load_myth_datasets(myth_dir: Path) -> DatasetBundle:
+RUN_FILE_RE = re.compile(r"^([a-zA-Z]+)(?:_run(\d+))?\.json$")
+
+
+def load_run_file(path) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """
+    Толерантный лоадер одного файла разметки. Возвращает (meta, segments).
+    Понимает ОБА формата:
+      (a) голый список   [ {segment}, ... ]                      (старый mine.json)
+      (b) объект-с-шапкой { "run_id":..., "segments":[...] }     (новый формат с run_log)
+    Это та же логика, что в line_alignment.load_run — держим скрипты на одном лоадере.
+    """
+    with open(path, "r", encoding="utf-8-sig") as f:
+        data = json.load(f)
+    if isinstance(data, list):
+        return {"source": Path(path).stem, "run_index": 1}, data
+    if isinstance(data, dict):
+        meta = {k: v for k, v in data.items() if k != "segments"}
+        return meta, data.get("segments", [])
+    raise ValueError(f"{path}: неожиданный JSON top-level type ({type(data).__name__})")
+
+
+def load_myth_datasets(myth_dir: Path) -> Tuple[DatasetBundle, Dict[str, List[List[Dict[str, Any]]]]]:
+    """
+    Поддерживает N прогонов на источник (run_log.py: sample_index / blind retest).
+    Файлы: {source}.json (run 1, он же anchor для остального пайплайна) и
+    {source}_run{N}.json (доп. прогоны того же источника — нужны для behavioral axis).
+    Возвращает (bundle с anchor-прогоном на источник, all_runs[source] = список прогонов).
+    """
+    runs_by_source: Dict[str, List[Tuple[int, List[Dict[str, Any]]]]] = defaultdict(list)
+
+    for file_path in sorted(myth_dir.glob("*.json")):
+        m = RUN_FILE_RE.match(file_path.name)
+        if not m:
+            continue
+        src, run_idx_str = m.group(1), m.group(2)
+        if src not in SOURCE_ORDER:
+            continue
+        try:
+            meta, segs = load_run_file(file_path)
+        except Exception as e:
+            print(f"  [!!!] БИТЫЙ ФАЙЛ: {file_path}. Причина: {e}")
+            continue
+        if not isinstance(segs, list) or not segs:
+            continue
+        # Индекс прогона: имя файла главнее (файлы зовутся _run{N}), затем шапка, затем 1.
+        if run_idx_str:
+            run_idx = int(run_idx_str)
+        else:
+            ri = meta.get("run_index")
+            run_idx = int(ri) if ri is not None else 1
+        runs_by_source[src].append((run_idx, segs))
+
     per_source: Dict[str, List[Dict[str, Any]]] = {}
-    for src in SOURCE_ORDER:
-        file_path = myth_dir / f"{src}.json"
-        if file_path.exists():
-            with open(file_path, "r", encoding="utf-8-sig") as f:
-                try:
-                    data = json.load(f)
-                    if isinstance(data, list):
-                        per_source[src] = data
-                except Exception as e:
-                    print(f"  [!!!] БИТЫЙ ФАЙЛ: {file_path}. Причина: {e}")
+    for src, runs in runs_by_source.items():
+        runs.sort(key=lambda x: x[0])
+        per_source[src] = runs[0][1]  # anchor run (run_idx==1) — используется во всём остальном пайплайне
 
     texts, sources, ids = [], [], []
     for src in SOURCE_ORDER:
@@ -97,7 +143,9 @@ def load_myth_datasets(myth_dir: Path) -> DatasetBundle:
         sources.extend([src] * len(segs))
         ids.extend([f"{src}_{i+1}" for i in range(len(segs))])
 
-    return DatasetBundle(texts=texts, sources=sources, ids=ids, per_source=per_source)
+    bundle = DatasetBundle(texts=texts, sources=sources, ids=ids, per_source=per_source)
+    all_runs = {src: [segs for _, segs in runs] for src, runs in runs_by_source.items()}
+    return bundle, all_runs
 
 
 def _norm(x: Any) -> str:
@@ -113,15 +161,24 @@ def parse_line_range(text_en: str) -> Optional[Tuple[int, int]]:
     return (int(m.group(1)), int(m.group(2))) if m else None
 
 
+def segment_range(seg: Dict[str, Any]) -> Optional[Tuple[int, int]]:
+    """Канон — явные line_start/line_end; фолбэк — парсинг чисел из text_en."""
+    ls, le = seg.get("line_start"), seg.get("line_end")
+    if ls is not None and le is not None:
+        return int(ls), int(le)
+    return parse_line_range(seg.get("text_en", ""))
+
+
 def project_to_lines(segments: List[Dict[str, Any]]) -> Dict[int, str]:
     """Список сегментов -> {номер_строки: function}. При перекрытии побеждает поздний сегмент."""
     line2fn: Dict[int, str] = {}
     for s in segments:
-        r = parse_line_range(s.get("text_en", ""))
+        r = segment_range(s)
         if not r:
             continue
         fn = _norm(s.get("function"))
-        for ln in range(r[0], r[1] + 1):
+        a, b = (r[0], r[1]) if r[0] <= r[1] else (r[1], r[0])
+        for ln in range(a, b + 1):
             line2fn[ln] = fn
     return line2fn
 
@@ -198,26 +255,38 @@ def imputed_subjectivity(source: str,
 
 def behavioral_subjectivity(runs: List[Dict[int, str]],
                             freedom: Dict[int, float],
-                            freedom_threshold: float = 0.3) -> Optional[float]:
+                            freedom_threshold: float = 0.3,
+                            min_runs: int = 2) -> Optional[float]:
     """
-    TODO / ЗАГЛУШКА. Поведенческая ось: устойчивость инварианта источника
-    поверх N его собственных прогонов (для человека — слепой ретест).
-    runs = список из >=2 проекций ОДНОГО источника. Пока прогон один — None.
+    Поведенческая ось: устойчивость инварианта источника поверх N его прогонов
+    (для человека — слепой ретест), В ЗОНАХ СВОБОДЫ текста, взвешенно по freedom.
+
+    ВАЖНО: `freedom` обязана приходить из CROSS-SOURCE пула (разброс по РАЗНЫМ
+    источникам/прогонам вместе). Если подать freedom, посчитанную по прогонам
+    того же одного источника, метрика вырождается (вес = измеряемая величина).
+    Для одного источника без других — см. onemodel.py: там считается raw
+    self-consistency, а сюда freedom передаётся ИЗВНЕ.
+
+    На каждой свободной строке self-consistency = доля прогонов, совпавших с модой
+    (1.0 = единогласие). N-устойчиво: один шальной прогон не обнуляет строку.
+    Строка учитывается, если присутствует хотя бы в min_runs прогонах.
+    Возвращает None, если ни одной квалифицирующей строки нет (а не ложный 0.0).
     """
     if len(runs) < 2:
-        return None  # STUB: нужен слепой ретест / N прогонов модели
-    # самосогласие в зонах свободы
-    common = set.intersection(*[set(r) for r in runs])
+        return None
+    all_lines = set().union(*[set(r) for r in runs])
     num = den = 0.0
-    for ln in common:
+    for ln in all_lines:
+        labels = [r[ln] for r in runs if ln in r]
+        if len(labels) < min_runs:
+            continue
         w = freedom.get(ln, 0.0)
         if w < freedom_threshold:
             continue
-        labels = [r[ln] for r in runs]
+        modal = Counter(labels).most_common(1)[0][1]
         den += w
-        if len(set(labels)) == 1:  # все прогоны согласны сами с собой
-            num += w
-    return num / den if den > 0 else 0.0
+        num += w * (modal / len(labels))
+    return num / den if den > 0 else None
 
 
 # -----------------------------
@@ -262,13 +331,22 @@ def run_line_alignment_report(per_source: Dict[str, List[Dict[str, Any]]], ancho
 
 def run_subjectivity_axes_report(projections: Dict[str, Dict[int, str]],
                                  runs_by_source: Optional[Dict[str, List[Dict[int, str]]]] = None) -> None:
-    """Печатает оси субъектности. freedom — рабочая; imputed/behavioral — заглушки до данных."""
+    """Печатает оси субъектности. freedom считается по ВСЕМ прогонам ВСЕХ источников
+    (run_log.py: каждый run_id/sample_index — отдельная метка в позиции), а не только
+    по одному anchor-прогону на источник — иначе свобода текста недооценивается там,
+    где разброс виден только между прогонами одного источника."""
     print("\n" + "=" * 80)
     print("🧠 SUBJECTIVITY AXES (freedom / imputed / behavioral)")
     print("=" * 80)
 
     n_src = len(projections)
-    free = freedom_map(projections)
+
+    freedom_inputs: Dict[str, Dict[int, str]] = dict(projections)
+    if runs_by_source:
+        for src, runs in runs_by_source.items():
+            for i, run_proj in enumerate(runs):
+                freedom_inputs[f"{src}__run{i+1}"] = run_proj
+    free = freedom_map(freedom_inputs)
 
     if n_src >= 2:
         free_lines = [ln for ln, w in free.items() if w > 0]
@@ -546,7 +624,7 @@ def main(data_dir: Path, no_graphs: bool = False) -> None:
         print(f"🚀 АНАЛИЗ КОРПУСА: {myth_dir.name.upper()}")
         print("░" * 80)
 
-        bundle = load_myth_datasets(myth_dir)
+        bundle, runs_by_source_raw = load_myth_datasets(myth_dir)
         if not bundle.texts:
             print(f"⚠️ Нет валидных .json в {myth_dir.name}, пропускаем.")
             continue
@@ -554,12 +632,20 @@ def main(data_dir: Path, no_graphs: bool = False) -> None:
         universal_texts.extend(bundle.texts)
         universal_sources.extend(bundle.sources)
 
+        for src, runs in runs_by_source_raw.items():
+            if len(runs) > 1:
+                print(f"  [run_log] {src}: {len(runs)} прогонов найдено -> behavioral axis активна")
+
         # Транзишн-метрики (по transition_from/to)
         run_transition_entropy_report(bundle.texts, bundle.sources)
 
         # ПОЧИНЕННОЕ сравнение по строкам + оси субъектности
         projections = run_line_alignment_report(bundle.per_source, anchor="mine")
-        run_subjectivity_axes_report(projections)
+        runs_by_source_proj = {
+            src: [project_to_lines(segs) for segs in segs_list]
+            for src, segs_list in runs_by_source_raw.items()
+        }
+        run_subjectivity_axes_report(projections, runs_by_source=runs_by_source_proj)
 
         # Shape/DTW по сегментам — для справки, помечен как granularity-sensitive
         compare_function_sequences_dtw(bundle.per_source)
