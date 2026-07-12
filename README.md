@@ -110,15 +110,15 @@ narrative-dynamics-analysis/
 ├── README.md
 ├── requirements.txt
 ├── src/
-│   ├── analysis.py        # cross-source: freedom, transitions, entropy, JSD
+│   ├── analysis.py        # cross-source: freedom, transitions, entropy, JSD,
+│   │                      #   line projection & agreement
 │   ├── onemodel.py        # single-source: self-consistency, behavioral, clustering,
 │   │                      #   forks, boundary/label decomposition, lacuna flagging
-│   ├── line_alignment.py  # line projection & agreement
 │   ├── wrap_runs.py       # attach canonical run headers (with consistency guards)
 │   ├── fix_json.py        # sanitize raw model JSON (quotes, commas, fences, wrapping)
+│   ├── fix_text_variant.py  # correct the text_variant metadata field across runs
 │   ├── extract_en.py      # parse CDLI bilingual text -> numbered lines (Descent)
-│   ├── extract_enki.py    # parse ETCSL block text -> numbered blocks (Enki)
-│   └── fix_text_variant.py
+│   └── extract_enki.py    # parse ETCSL block text -> numbered blocks (Enki)
 ├── data/
 │   ├── inanna_descent/    # opus_run1..10, gemini_run*, mine.json  (CDLI, line-level)
 │   └── inanna_enki/       # opus_run1..10, gemini_run1..10, mine_run1..2,
