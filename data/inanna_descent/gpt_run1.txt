@@ -1,0 +1,143 @@
+{
+  "run_id": "gemini_inanna_descent_2026-07-06_r1",
+  "source": "gpt",
+  "corpus": "inanna_descent",
+  "run_index": 1,
+  "annotated_date": "2026-07-05",
+  "fresh_session": true,
+  "prior_run_id": null,
+  "text_variant": "ETCSL_1.7.4_EN",
+  "model": {
+    "model_version": "gemini_pro_standard (anonymous UI, 2026-07-01)",
+    "temperature": null,
+    "prompt_id": "seg_v4",
+    "sample_index": 1
+  },
+"segments": [
+  {
+    "segment_id": "1",
+    "scene_gloss": "Descent begins",
+    "function": "preparation",
+    "transition_from": "preparation",
+    "transition_to": "preparation",
+    "line_start": 1,
+    "line_end": 27
+  },
+  {
+    "segment_id": "2",
+    "scene_gloss": "Instructions to Ninšubur",
+    "function": "preparation",
+    "transition_from": "preparation",
+    "transition_to": "contact",
+    "line_start": 28,
+    "line_end": 72
+  },
+  {
+    "segment_id": "3",
+    "scene_gloss": "Arrival at the gate",
+    "function": "contact",
+    "transition_from": "contact",
+    "transition_to": "negotiation",
+    "line_start": 73,
+    "line_end": 93
+  },
+  {
+    "segment_id": "4",
+    "scene_gloss": "Neti reports arrival",
+    "function": "exchange",
+    "transition_from": "negotiation",
+    "transition_to": "negotiation",
+    "line_start": 94,
+    "line_end": 113
+  },
+  {
+    "segment_id": "5",
+    "scene_gloss": "Ereškigal's trap",
+    "function": "negotiation",
+    "transition_from": "negotiation",
+    "transition_to": "disruption",
+    "line_start": 114,
+    "line_end": 164
+  },
+  {
+    "segment_id": "6",
+    "scene_gloss": "Judgment and death",
+    "function": "disruption",
+    "transition_from": "disruption",
+    "transition_to": "return",
+    "line_start": 165,
+    "line_end": 172
+  },
+  {
+    "segment_id": "7",
+    "scene_gloss": "Ninšubur seeks help",
+    "function": "return",
+    "transition_from": "return",
+    "transition_to": "exchange",
+    "line_start": 173,
+    "line_end": 221
+  },
+  {
+    "segment_id": "8",
+    "scene_gloss": "Enki prepares rescue",
+    "function": "preparation",
+    "transition_from": "exchange",
+    "transition_to": "return",
+    "line_start": 222,
+    "line_end": 253
+  },
+  {
+    "segment_id": "9",
+    "scene_gloss": "Resurrection accomplished",
+    "function": "return",
+    "transition_from": "return",
+    "transition_to": "negotiation",
+    "line_start": 254,
+    "line_end": 281
+  },
+  {
+    "segment_id": "10",
+    "scene_gloss": "Substitute demanded",
+    "function": "negotiation",
+    "transition_from": "negotiation",
+    "transition_to": "return",
+    "line_start": 282,
+    "line_end": 306
+  },
+  {
+    "segment_id": "11",
+    "scene_gloss": "Faithful companions spared",
+    "function": "stabilization",
+    "transition_from": "return",
+    "transition_to": "disruption",
+    "line_start": 307,
+    "line_end": 347
+  },
+  {
+    "segment_id": "12",
+    "scene_gloss": "Dumuzi selected",
+    "function": "disruption",
+    "transition_from": "disruption",
+    "transition_to": "return",
+    "line_start": 348,
+    "line_end": 379
+  },
+  {
+    "segment_id": "13",
+    "scene_gloss": "Search and lament",
+    "function": "return",
+    "transition_from": "return",
+    "transition_to": "stabilization",
+    "line_start": 380,
+    "line_end": 403
+  },
+  {
+    "segment_id": "14",
+    "scene_gloss": "Seasonal settlement",
+    "function": "stabilization",
+    "transition_from": "stabilization",
+    "transition_to": "stabilization",
+    "line_start": 404,
+    "line_end": 412
+  }
+]
