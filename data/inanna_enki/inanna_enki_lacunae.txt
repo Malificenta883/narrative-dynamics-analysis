@@ -1,0 +1,47 @@
+# Lacunae & indeterminacy registry — Inana and Enki (ETCSL 1.3.1)
+#
+# Purpose: tell the pipeline where high freedom is an ARTIFACT (damaged / unreadable
+# text) rather than a FINDING (genuine interpretive ambiguity of intact myth).
+#
+# Key distinction (per the researcher's point):
+#   Missing text is NOT automatically a problem. Most lacunae are harmless — the
+#   surrounding myth still reads, and human + AI annotators converge on the function
+#   anyway by restoring the invariant from context.
+#   The problem is INDETERMINACY: a stretch where no cultural invariant exists to
+#   read it, so no annotator (human or model) can assign a function — regardless of
+#   whether text is missing. Damaged text is only part of it; the deeper issue is
+#   that even the surviving lines have no established interpretation.
+#
+# Format (tab- or space-separated), one zone per line:
+#   START-END   TYPE   note
+#
+# TYPE values:
+#   missing        text is lost but the myth still reads around it; usually harmless,
+#                  annotators still converge. Do NOT auto-flag freedom here as artifact
+#                  unless it also lands on an indeterminate zone.
+#   indeterminate  no cultural invariant to read this stretch; nobody (human/AI) can
+#                  assign a function reliably. High freedom here is an ARTIFACT of
+#                  unreadability, NOT genuine textual ambiguity. Exclude from claims
+#                  about interpretive freedom; label forks here 'lacuna', not
+#                  'text_ambiguous'.
+#
+# Lines beginning with # are comments. Blank lines ignored.
+
+# --- the frog / halub-tree passage: indeterminate ---
+# King ... should not forget a word; a frog "spoke by the bolt of the temple door";
+# Enki grasps the frog by its right paw, shows it somewhere, receives the halub-tree
+# and box-tree, gives to the bird of heaven and the fish of the subterranean waters,
+# then ~10-15 lines missing. No annotator can read the function of this scene: there
+# is no established invariant for what the frog / tree redistribution DOES here, and
+# the causal thread is severed by the following lacuna. Freedom ~0.62 here is an
+# artifact of indeterminacy, not ambiguity.
+311-331    indeterminate    frog + halub-tree redistribution; no cultural invariant; abuts missing lines
+
+# --- known missing-line gaps from the source (harmless unless also indeterminate) ---
+# These are the "about N lines missing" reserved gaps from extract_enki.py numbering.
+# Listed for completeness so the pipeline can see them, but marked 'missing' because
+# the myth reads around them and annotators converge. Fill in / verify the exact
+# reserved ranges from inanna_enki_map.tsv if you want them all registered.
+# (example placeholders — replace with the real reserved ranges if needed:)
+# 332-346    missing    ~10-15 lines missing after the frog passage
+# 1-6        missing    opening ~6 lines missing (myth starts at 7)
