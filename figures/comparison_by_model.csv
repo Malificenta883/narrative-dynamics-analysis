@@ -1,0 +1,115 @@
+corpus,metric,kind,pair_or_source,value
+Gudea,FUNCTION (state),within,opus,0.716
+Gudea,FUNCTION (state),within,gemini,0.614
+Gudea,FUNCTION (state),within,qwen,0.686
+Gudea,FUNCTION (state),within,mine,0.34
+Gudea,FUNCTION (state),between,gemini<->mine,0.317
+Gudea,FUNCTION (state),between,gemini<->opus,0.582
+Gudea,FUNCTION (state),between,gemini<->qwen,0.538
+Gudea,FUNCTION (state),between,mine<->opus,0.354
+Gudea,FUNCTION (state),between,mine<->qwen,0.385
+Gudea,FUNCTION (state),between,opus<->qwen,0.657
+Gudea,TRANSITION raw,within,opus,0.6
+Gudea,TRANSITION raw,within,gemini,0.472
+Gudea,TRANSITION raw,within,qwen,0.579
+Gudea,TRANSITION raw,within,mine,0.175
+Gudea,TRANSITION raw,between,gemini<->mine,0.265
+Gudea,TRANSITION raw,between,gemini<->opus,0.502
+Gudea,TRANSITION raw,between,gemini<->qwen,0.497
+Gudea,TRANSITION raw,between,mine<->opus,0.268
+Gudea,TRANSITION raw,between,mine<->qwen,0.242
+Gudea,TRANSITION raw,between,opus<->qwen,0.553
+Gudea,TRANSITION|function,within,opus,0.697
+Gudea,TRANSITION|function,within,gemini,0.543
+Gudea,TRANSITION|function,within,qwen,0.643
+Gudea,TRANSITION|function,within,mine,0.276
+Gudea,TRANSITION|function,between,gemini<->mine,0.163
+Gudea,TRANSITION|function,between,gemini<->opus,0.633
+Gudea,TRANSITION|function,between,gemini<->qwen,0.606
+Gudea,TRANSITION|function,between,mine<->opus,0.1
+Gudea,TRANSITION|function,between,mine<->qwen,0.143
+Gudea,TRANSITION|function,between,opus<->qwen,0.641
+Gudea,freedom_state_A,mean,-,0.374
+Gudea,freedom_dir_A,mean,-,0.451
+Gudea,freedom_state_B,mean,-,0.43
+Gudea,freedom_dir_B,mean,-,0.513
+Gudea,freedom_state_C,mean,-,0.256
+Gudea,freedom_dir_C,mean,-,0.257
+Gudea,freedom_state_D,mean,-,0.248
+Gudea,freedom_dir_D,mean,-,0.33
+Inanna's Descent,FUNCTION (state),within,opus,0.701
+Inanna's Descent,FUNCTION (state),within,gemini,0.66
+Inanna's Descent,FUNCTION (state),within,qwen,0.72
+Inanna's Descent,FUNCTION (state),within,mine,0.269
+Inanna's Descent,FUNCTION (state),between,gemini<->mine,0.293
+Inanna's Descent,FUNCTION (state),between,gemini<->opus,0.464
+Inanna's Descent,FUNCTION (state),between,gemini<->qwen,0.532
+Inanna's Descent,FUNCTION (state),between,mine<->opus,0.315
+Inanna's Descent,FUNCTION (state),between,mine<->qwen,0.33
+Inanna's Descent,FUNCTION (state),between,opus<->qwen,0.597
+Inanna's Descent,TRANSITION raw,within,opus,0.57
+Inanna's Descent,TRANSITION raw,within,gemini,0.511
+Inanna's Descent,TRANSITION raw,within,qwen,0.484
+Inanna's Descent,TRANSITION raw,within,mine,0.171
+Inanna's Descent,TRANSITION raw,between,gemini<->mine,0.294
+Inanna's Descent,TRANSITION raw,between,gemini<->opus,0.362
+Inanna's Descent,TRANSITION raw,between,gemini<->qwen,0.322
+Inanna's Descent,TRANSITION raw,between,mine<->opus,0.377
+Inanna's Descent,TRANSITION raw,between,mine<->qwen,0.286
+Inanna's Descent,TRANSITION raw,between,opus<->qwen,0.418
+Inanna's Descent,TRANSITION|function,within,opus,0.556
+Inanna's Descent,TRANSITION|function,within,gemini,0.541
+Inanna's Descent,TRANSITION|function,within,qwen,0.655
+Inanna's Descent,TRANSITION|function,within,mine,0.564
+Inanna's Descent,TRANSITION|function,between,gemini<->mine,0.358
+Inanna's Descent,TRANSITION|function,between,gemini<->opus,0.396
+Inanna's Descent,TRANSITION|function,between,gemini<->qwen,0.359
+Inanna's Descent,TRANSITION|function,between,mine<->opus,0.479
+Inanna's Descent,TRANSITION|function,between,mine<->qwen,0.383
+Inanna's Descent,TRANSITION|function,between,opus<->qwen,0.509
+Inanna's Descent,freedom_state_A,mean,-,0.418
+Inanna's Descent,freedom_dir_A,mean,-,0.567
+Inanna's Descent,freedom_state_B,mean,-,0.479
+Inanna's Descent,freedom_dir_B,mean,-,0.585
+Inanna's Descent,freedom_state_C,mean,-,0.341
+Inanna's Descent,freedom_dir_C,mean,-,0.317
+Inanna's Descent,freedom_state_D,mean,-,0.236
+Inanna's Descent,freedom_dir_D,mean,-,0.359
+Inanna & Enki,FUNCTION (state),within,opus,0.872
+Inanna & Enki,FUNCTION (state),within,gemini,0.766
+Inanna & Enki,FUNCTION (state),within,qwen,0.836
+Inanna & Enki,FUNCTION (state),within,mine,0.212
+Inanna & Enki,FUNCTION (state),between,gemini<->mine,0.498
+Inanna & Enki,FUNCTION (state),between,gemini<->opus,0.784
+Inanna & Enki,FUNCTION (state),between,gemini<->qwen,0.558
+Inanna & Enki,FUNCTION (state),between,mine<->opus,0.49
+Inanna & Enki,FUNCTION (state),between,mine<->qwen,0.462
+Inanna & Enki,FUNCTION (state),between,opus<->qwen,0.586
+Inanna & Enki,TRANSITION raw,within,opus,0.556
+Inanna & Enki,TRANSITION raw,within,gemini,0.677
+Inanna & Enki,TRANSITION raw,within,qwen,0.641
+Inanna & Enki,TRANSITION raw,within,mine,0.09
+Inanna & Enki,TRANSITION raw,between,gemini<->mine,0.346
+Inanna & Enki,TRANSITION raw,between,gemini<->opus,0.429
+Inanna & Enki,TRANSITION raw,between,gemini<->qwen,0.431
+Inanna & Enki,TRANSITION raw,between,mine<->opus,0.25
+Inanna & Enki,TRANSITION raw,between,mine<->qwen,0.349
+Inanna & Enki,TRANSITION raw,between,opus<->qwen,0.436
+Inanna & Enki,TRANSITION|function,within,opus,0.537
+Inanna & Enki,TRANSITION|function,within,gemini,0.736
+Inanna & Enki,TRANSITION|function,within,qwen,0.678
+Inanna & Enki,TRANSITION|function,within,mine,0.411
+Inanna & Enki,TRANSITION|function,between,gemini<->mine,0.378
+Inanna & Enki,TRANSITION|function,between,gemini<->opus,0.458
+Inanna & Enki,TRANSITION|function,between,gemini<->qwen,0.492
+Inanna & Enki,TRANSITION|function,between,mine<->opus,0.202
+Inanna & Enki,TRANSITION|function,between,mine<->qwen,0.22
+Inanna & Enki,TRANSITION|function,between,opus<->qwen,0.576
+Inanna & Enki,freedom_state_A,mean,-,0.271
+Inanna & Enki,freedom_dir_A,mean,-,0.479
+Inanna & Enki,freedom_state_B,mean,-,0.318
+Inanna & Enki,freedom_dir_B,mean,-,0.52
+Inanna & Enki,freedom_state_C,mean,-,0.21
+Inanna & Enki,freedom_dir_C,mean,-,0.318
+Inanna & Enki,freedom_state_D,mean,-,0.169
+Inanna & Enki,freedom_dir_D,mean,-,0.297
