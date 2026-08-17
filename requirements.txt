@@ -1,4 +1,11 @@
+# Core analysis pipeline (src/analysis.py, src/onemodel.py)
 numpy>=1.21.0
 networkx>=3.0
 matplotlib>=3.5.0
+scipy>=1.7.0
 
+# GitHub sync utility (github_sync.py) — optional, not needed to run the analysis
+PyGithub>=2.0.0
+
+# Note: direction_analysis.py and freedom_variants.py use the Python standard
+# library only (json, math, re, collections, statistics) — no install needed.
